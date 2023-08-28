@@ -21,6 +21,7 @@ export default function ChatScreen() {
 
   return (
     <GiftedChat
+			//name={name}
       messages={messages}
       onSend={(newMessages) => onSend(newMessages)}
       user={{ _id: 1 }}
