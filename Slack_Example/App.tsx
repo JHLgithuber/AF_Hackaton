@@ -1,6 +1,6 @@
 import React from 'react'
 import { Platform } from 'react-native'
-import PropTypes from 'deprecated-react-native-prop-types'
+import { ViewPropTypes as DeprecatedViewPropTypes } from 'deprecated-react-native-prop-types';
 import { GiftedChat } from 'react-native-gifted-chat'
 import emojiUtils from 'emoji-utils'
 

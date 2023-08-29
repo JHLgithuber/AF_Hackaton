@@ -1,30 +1,103 @@
 // ChatScreen.js
-import React, { useState } from 'react';
-import { GiftedChat } from 'react-native-gifted-chat';
+import React, { useState, useEffect } from 'react';
+import { GiftedChat, IMessage } from 'react-native-gifted-chat';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import CryptoJS from 'crypto-js';
 
 export default function ChatScreen() {
-  const [messages, setMessages] = useState([
-    {
-      _id: 1,
-      text: 'Hello!',
-      createdAt: new Date(),
-      user: {
-        _id: 2,
-        name: 'User',
-      },
-    },
-  ]);
+	const [messages, setMessages] = useState([
+		{
+			_id: 1,
+			text: 'Hello!',
+			createdAt: new Date(),
+			user: {
+				_id: 2,
+				name: 'User',
+			},
+		},
+	]);
 
-  const onSend = (newMessages = []) => {
-    setMessages((prevMessages) => GiftedChat.append(prevMessages, newMessages));
-  };
+	const fetchMessages = async () => {
+		// 비동기로 메시지를 불러오는 함수입니다.
+		const storedMessages = await AsyncStorage.getItem('messages'); // 저장소에서 메시지를 불러옵니다.
+		if (storedMessages) {
+			setMessages(JSON.parse(storedMessages)); // 저장된 메시지가 있다면 상태를 업데이트합니다.
+		}
+	};
 
-  return (
-    <GiftedChat
-			//name={name}
-      messages={messages}
-      onSend={(newMessages) => onSend(newMessages)}
-      user={{ _id: 1 }}
-    />
-  );
+	const removeMessages = async () => {
+		try {
+			await AsyncStorage.removeItem('messages');
+		} catch (e) {
+			// remove error
+		}
+		console.log('메시지가 삭제되었습니다.');
+		return [
+			{
+				_id: 1,
+				text: '다 지웠음 ㅋ',
+				createdAt: new Date(),
+				user: {
+					_id: 2,
+					name: 'User',
+				},
+			},
+		];
+	};
+
+	const onSend = async (newMessage: IMessage) => {
+		//보내는 메시지
+		console.log('newMessage 객체:', newMessage);
+
+		setMessages((prevMessages) => GiftedChat.append(prevMessages, newMessage));
+		await AsyncStorage.setItem(
+			'messages',
+			JSON.stringify(GiftedChat.append(messages, newMessage))
+		); // 새로운 메시지를 저장소에 저장합니다
+
+		if (newMessage[0].text === '/r') {
+			return removeMessages();
+		}
+	};
+
+	const onReceive = async (newMessage: IMessage) => {
+		//받은 메시지
+		setMessages((prevMessages) => GiftedChat.append(prevMessages, newMessage));
+		await AsyncStorage.setItem(
+			'messages',
+			JSON.stringify(GiftedChat.append(messages, newMessage))
+		); // 새로운 메시지를 저장소에 저장합니다.
+	};
+
+	useEffect(() => {
+		fetchMessages(); // 함수를 실행합니다.
+	}, []); // 컴포넌트가 마운트될 때 한 번만 실행됩니다.
+
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			const newMessage: IMessage = {
+				_id: messages.length + 1,
+				text: '자동으로 받은 메시지입니다.',
+				createdAt: new Date(),
+				user: {
+					_id: 3,
+					name: '시스템',
+				},
+			};
+
+			onReceive(newMessage);
+		}, 10000); // 10초 후에 메시지를 받습니다.
+
+		return () => {
+			clearTimeout(timer);
+		};
+	}, [messages]);
+
+	return (
+		<GiftedChat
+			messages={messages}
+			onSend={(newMessages) => onSend(newMessages)}
+			user={{ _id: 1 }}
+		/>
+	);
 }
