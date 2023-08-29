@@ -45,18 +45,18 @@ export default function ChatScreen() {
 		}
 	};
 
-const onSend = async (newMessages: IMessage[]) => {
-	try {
-		const updatedMessages = GiftedChat.append(messages, newMessages);
-		await AsyncStorage.setItem('messages', JSON.stringify(updatedMessages));
-		setMessages(updatedMessages);
-		if (newMessages[0].text === '/r') {
-			await removeMessages();
+	const onSend = async (newMessages: IMessage[]) => {
+		try {
+			const updatedMessages = GiftedChat.append(messages, newMessages);
+			await AsyncStorage.setItem('messages', JSON.stringify(updatedMessages));
+			setMessages(updatedMessages);
+			if (newMessages[0].text === '/r') {
+				await removeMessages();
+			}
+		} catch (e) {
+			console.error('메시지 전송 실패:', e);
 		}
-	} catch (e) {
-		console.error('메시지 전송 실패:', e);
-	}
-};
+	};
 
 	const onReceive = async (newMessage: IMessage) => {
 		//받은 메시지
