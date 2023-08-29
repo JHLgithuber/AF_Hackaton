@@ -21,44 +21,42 @@ export default function ChatScreen() {
 		// 비동기로 메시지를 불러오는 함수입니다.
 		const storedMessages = await AsyncStorage.getItem('messages'); // 저장소에서 메시지를 불러옵니다.
 		if (storedMessages) {
-			setMessages(JSON.parse(storedMessages)); // 저장된 메시지가 있다면 상태를 업데이트합니다.
+			setMessages(JSON.parse(storedMessages));
 		}
 	};
 
 	const removeMessages = async () => {
 		try {
 			await AsyncStorage.removeItem('messages');
-		} catch (e) {
-			// remove error
-		}
-		console.log('메시지가 삭제되었습니다.');
-		return [
-			{
-				_id: 1,
-				text: '다 지웠음 ㅋ',
-				createdAt: new Date(),
-				user: {
-					_id: 2,
-					name: 'User',
+			console.log('메시지가 삭제되었습니다.');
+			setMessages([
+				{
+					_id: 1,
+					text: '다 지웠음 ㅋ',
+					createdAt: new Date(),
+					user: {
+						_id: 2,
+						name: 'User',
+					},
 				},
-			},
-		];
-	};
-
-	const onSend = async (newMessage: IMessage) => {
-		//보내는 메시지
-		console.log('newMessage 객체:', newMessage);
-
-		setMessages((prevMessages) => GiftedChat.append(prevMessages, newMessage));
-		await AsyncStorage.setItem(
-			'messages',
-			JSON.stringify(GiftedChat.append(messages, newMessage))
-		); // 새로운 메시지를 저장소에 저장합니다
-
-		if (newMessage[0].text === '/r') {
-			return removeMessages();
+			]);
+		} catch (e) {
+			console.error('메시지 삭제 실패:', e);
 		}
 	};
+
+const onSend = async (newMessages: IMessage[]) => {
+	try {
+		const updatedMessages = GiftedChat.append(messages, newMessages);
+		await AsyncStorage.setItem('messages', JSON.stringify(updatedMessages));
+		setMessages(updatedMessages);
+		if (newMessages[0].text === '/r') {
+			await removeMessages();
+		}
+	} catch (e) {
+		console.error('메시지 전송 실패:', e);
+	}
+};
 
 	const onReceive = async (newMessage: IMessage) => {
 		//받은 메시지
