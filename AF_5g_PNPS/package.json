@@ -20,7 +20,10 @@
     "react-native-gifted-chat": "^2.4.0",
     "react-native-paper": "^5.10.3",
     "react-native-rsa-native": "^2.0.5",
-    "expo-sqlite": "~11.3.2"
+    "expo-sqlite": "~11.3.2",
+    "expo-crypto": "~12.4.1",
+    "expo-task-manager": "~11.3.0",
+    "expo-background-fetch": "~11.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

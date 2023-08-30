@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GiftedChat, IMessage } from 'react-native-gifted-chat';
 import * as SQLite from 'expo-sqlite';
+//import HybridCryptoModule from './HybridCryptoModule.js';
 
 // 채팅 저장을 위한 SQLite 데이터베이스를 열기
 const Chat_DB = SQLite.openDatabase('Encrypted_Chat_Data.db');
@@ -22,7 +23,7 @@ export default function ChatScreen() {
 					for (let i = 0; i < rows.length; i++) {
 						const item = rows.item(i);
 						const rowMessage: IMessage = {
-							_id: item.id,
+							_id: item.pk,
 							text: item.encrypt_data,
 							createdAt: new Date(item.date),
 							user: {
@@ -45,7 +46,7 @@ export default function ChatScreen() {
 	const Make_new_DB = () => {
 		Chat_DB.transaction((tx) => {
 			tx.executeSql(
-				`CREATE TABLE IF NOT EXISTS ${RoomName} (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, sender TEXT, sender_name TEXT, receiver INTEGER, peer_key_hash TEXT, server_key_hash TEXT, encrypt_AES_Key TEXT, encrypt_data BLOB);`,
+				`CREATE TABLE IF NOT EXISTS ${RoomName} (pk INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, sender TEXT, sender_name TEXT, receiver INTEGER, peer_key_hash TEXT, server_key_hash TEXT, encrypt_AES_Key TEXT, encrypt_data BLOB);`,
 				[],
 				(_, result) => {
 					console.log('Table Create Success:', result);
@@ -101,7 +102,7 @@ export default function ChatScreen() {
 			// 기존의 메시지 삽입 로직
 			Chat_DB.transaction((tx) => {
 				tx.executeSql(
-					`INSERT INTO ${RoomName} (id, date, sender,sender_name, receiver, peer_key_hash, server_key_hash, encrypt_AES_Key, encrypt_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+					`INSERT INTO ${RoomName} (pk, date, sender,sender_name, receiver, peer_key_hash, server_key_hash, encrypt_AES_Key, encrypt_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 					[
 						generateUniquePK(),
 						message.createdAt.toISOString(),
@@ -134,7 +135,7 @@ export default function ChatScreen() {
 		// 데이터베이스에 새로운 수신 메시지를 저장
 		Chat_DB.transaction((tx) => {
 			tx.executeSql(
-				`INSERT INTO ${RoomName} (id, date, sender, sender_name, receiver, peer_key_hash, server_key_hash, encrypt_AES_Key, encrypt_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+				`INSERT INTO ${RoomName} (pk, date, sender, sender_name, receiver, peer_key_hash, server_key_hash, encrypt_AES_Key, encrypt_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 				[
 					generateUniquePK(),
 					newReceivingMessage.createdAt.toISOString(),
