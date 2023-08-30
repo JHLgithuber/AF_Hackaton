@@ -7,13 +7,16 @@ const Chat_DB = SQLite.openDatabase('Encrypted_Chat_Data.db');
 
 export default function ChatScreen() {
 	const RoomName = 'test_room';
+	const UserID = 100
+	const UserName= "이진형"
+	
 	const [messages, setMessages] = useState([]);
 
 	const fetchMessages = () => {
 		let rowArray = [];
 		Chat_DB.transaction((tx) => {
 			tx.executeSql(
-				`SELECT * FROM ${RoomName}`,
+				`SELECT * FROM ${RoomName} ORDER BY date DESC`,
 				[],
 				(_, { rows }) => {
 					for (let i = 0; i < rows.length; i++) {
@@ -102,8 +105,8 @@ export default function ChatScreen() {
 					[
 						generateUniquePK(),
 						message.createdAt.toISOString(),
-						message.user._id,
-						message.user.name,
+						UserID.toString(),
+						UserName,
 						null,
 						null,
 						null,
@@ -156,9 +159,11 @@ export default function ChatScreen() {
 
 	useEffect(() => {
 		Make_new_DB();
+		fetchMessages();
 	}, []);
 
 	useEffect(() => {
+		console.log(UserID);
 		const timer = setTimeout(() => {
 			const newMessage: IMessage = {
 				text: '자동으로 받은 메시지입니다.',
@@ -182,7 +187,8 @@ export default function ChatScreen() {
 			messages={messages}
 			onSend={(newMessages) => onSend(newMessages)}
 			user={{
-				_id: 1,
+				_id: UserID.toString(),
+				name: UserName,
 			}}
 		/>
 	);
