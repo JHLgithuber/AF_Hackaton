@@ -7,7 +7,7 @@ var Start_MakingKey = new Date();
 console.log("\n\n");
 console.log(Start_MakingKey)
 const RSAKey = require('react-native-rsa');
-const bits = 725;
+const bits = 2048;
 const exponent = '10001'; // must be a string. This is hex string. decimal = 65537
 const rsa = new RSAKey();
 rsa.generate(bits, exponent);

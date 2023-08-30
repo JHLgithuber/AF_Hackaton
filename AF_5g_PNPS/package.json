@@ -19,7 +19,8 @@
     "react-native-appearance": "^0.0.0",
     "react-native-gifted-chat": "^2.4.0",
     "react-native-paper": "^5.10.3",
-    "react-native-rsa-native": "^2.0.5"
+    "react-native-rsa-native": "^2.0.5",
+    "expo-sqlite": "~11.3.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
