@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import { View, Text } from 'react-native';
 
-//import 'react-native-rsa-expo';
+import 'react-native-rsa-expo';
 
 var Start_MakingKey = new Date();
 console.log("\n\n");
 console.log(Start_MakingKey)
+
 const RSAKey = require('react-native-rsa');
 const bits = 2048;
 const exponent = '10001'; // must be a string. This is hex string. decimal = 65537

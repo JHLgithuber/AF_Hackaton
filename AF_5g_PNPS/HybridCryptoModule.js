@@ -1,15 +1,15 @@
-import RSA from 'react-native-rsa-native';
+//import 'react-native-rsa-expo';
 import * as SQLite from 'expo-sqlite';
 import * as Crypto from 'expo-crypto';
 import * as TaskManager from 'expo-task-manager';
 import * as BackgroundFetch from 'expo-background-fetch';
 
-//키 Pair 저장을 위한 SQLite 데이터베이스를 열기
 const KeyPair_DB = SQLite.openDatabase('Encrypted_Chat_Data.db');
-const RSA_KEYPAIR_TASK = 'rsa-keypair-task';
+const RSAKey = require('react-native-rsa');
+const bits = 2048;
+const exponent = '10001'; // must be a string. This is hex string. decimal = 65537
 
 KeyPair_DB.transaction((tx) => {
-	//키페어 DB 없으면 생성
 	tx.executeSql(
 		`CREATE TABLE IF NOT EXISTS KeyTable (
       public_key_hash TEXT PRIMARY KEY NOT NULL,
@@ -21,36 +21,30 @@ KeyPair_DB.transaction((tx) => {
 	);
 });
 
-const addKeyPair = async () => {
-	// RSA 키페어 생성
-	const { publicKey, privateKey } = await RSA.generateKeys(2048);
+export const RSA_KeyPair_Maker = async () => {
+	console.log('Making_RSA_Key_Pair...');
+	var Start_MakingKey = new Date();
+	console.log(Start_MakingKey);
 
-	// 퍼블릭 키의 해시값을 생성 (여기서는 단순화를 위해 publicKey를 사용)
-	const publicKeyHash = publicKey; // 실제로는 SHA-256 등을 사용해 해시를 생성해야 함
+	const rsa = new RSAKey();
+	rsa.generate(bits, exponent);
+	const publicKey = rsa.getPublicString(); // return json encoded string
+	const privateKey = rsa.getPrivateString(); // return json encoded string
+	console.log(publicKey);
+	console.log(privateKey);
 
-	// 현재 날짜와 시간을 가져옴
-	const issuedDate = new Date().toISOString();
+	var End_MakingKey = new Date();
+	console.log(End_MakingKey - Start_MakingKey);
 
-	// 사용여부
-	const isUsed = 0; // 0은 false, 1은 true
-
-	// SQLite에 정보 저장
-};
-
-const RSA_KeyPair_Maker = async () => {
-	const keys = await RSA.generate(4); // 2048은 키 길이입니다.
-	console.log('2048 bit key: ', keys);
-
-	// 공개키의 SHA-512 해시값을 생성합니다.
 	const publicKeyHash = await Crypto.digestStringAsync(
 		Crypto.CryptoDigestAlgorithm.SHA512,
-		keys.public
+		publicKey
 	);
 
 	KeyPair_DB.transaction((tx) => {
 		tx.executeSql(
-			'INSERT INTO KeyTable (public_key_hash, public_key, encrypt_private_key, generated_date, used_date) VALUES (?, ?, ?, ?, ?)',
-			[publicKeyHash, keys.public, keys.private, new Date().toISOString(), null],
+			'INSERT INTO KeyTable (public_key_hash, public_key, encrypted_private_key, generated_date, used_date) VALUES (?, ?, ?, ?, ?)',
+			[publicKeyHash, publicKey, privateKey, new Date().toISOString(), null],
 			[],
 			(_, result) => {
 				console.log('Key_Pair Create Success:', result);
@@ -63,24 +57,30 @@ const RSA_KeyPair_Maker = async () => {
 	});
 };
 
-TaskManager.defineTask(RSA_KEYPAIR_TASK, async () => {
-	try {
-		await RSA_KeyPair_Maker(); // RSA 키페어를 생성하는 함수
-		return {
-			error: false,
-		};
-	} catch (error) {
-		return {
-			error: true,
-		};
-	}
-});
+/*
+console.log(privateKey);
+var End_MakingKey = new Date();
+console.log(End_MakingKey-Start_MakingKey);
 
-export const registerBackgroundTask = async () => {
-	await console.log("BackgroundTask ON")
-	await BackgroundFetch.registerTaskAsync(RSA_KEYPAIR_TASK, {
-		minimumInterval: 60 * 15, // 15분마다 실행
-		stopOnTerminate: false, // 앱이 종료되더라도 실행
-		startOnBoot: true, // 장치가 부팅하면 시작
-	});
-};
+//const rsa = new RSAKey();
+for (i = 0; i < 3; i++) {
+	rsa.setPublicString(publicKey);
+	const originText = '계절이 지나가는 하늘에는 가을로 가득 차 있습니다.';
+	const encrypted = rsa.encrypt(originText);
+	console.log(encrypted);
+	rsa.setPrivateString(privateKey);
+	const decrypted = rsa.decrypt(encrypted); // decrypted == originText
+	console.log(decrypted);
+}
+
+class App extends Component {
+	render() {
+		return (
+			<View>
+				<Text>Demo</Text>
+			</View>
+		);
+	}
+}
+
+export default App;*/
