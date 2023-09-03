@@ -1,5 +1,5 @@
 //App.tsx
-
+//https://docs.expo.dev/workflow/customizing/
 import React, { useState, useEffect } from 'react';
 import { Appearance } from 'react-native';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
