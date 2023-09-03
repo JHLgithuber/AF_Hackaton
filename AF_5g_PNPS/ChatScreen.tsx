@@ -163,7 +163,7 @@ export default function ChatScreen() {
 		fetchMessages();
 	}, []);
 
-	useEffect(() => {
+	/*useEffect(() => {
 		console.log(UserID);
 		const timer = setTimeout(() => {
 			const newMessage: IMessage = {
@@ -181,7 +181,7 @@ export default function ChatScreen() {
 		return () => {
 			clearTimeout(timer);
 		};
-	}, [messages]);
+	}, [messages]);*/
 
 	return (
 		<GiftedChat
