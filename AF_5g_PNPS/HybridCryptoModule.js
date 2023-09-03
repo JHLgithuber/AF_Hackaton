@@ -6,8 +6,8 @@ import * as BackgroundFetch from 'expo-background-fetch';
 
 const KeyPair_DB = SQLite.openDatabase('Encrypted_Chat_Data.db');
 const RSAKey = require('react-native-rsa');
-const bits = 32;
-const exponent = '10001'; // must be a string. This is hex string. decimal = 65537
+const bits = 1024; //안전한건 2048 이상
+const exponent = '65537'; // must be a string. This is hex string. decimal = 65537
 /*
 KeyPair_DB.transaction((tx) => {
 	tx.executeSql(

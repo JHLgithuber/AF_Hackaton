@@ -9,34 +9,48 @@ import ChatScreen from './ChatScreen';
 import HomeScreen from './HomeScreen';
 import ProfileScreen from './ProfileScreen';
 import * as CryptoModule from './HybridCryptoModule'; // Task 등록 함수를 여기서 불러옵니다.
+import { useNavigation } from '@react-navigation/native';
 
 const BACKGROUND_FETCH_TASK = 'background-fetch-task';
-const Tab = createBottomTabNavigator(); 
+const Tab = createBottomTabNavigator();
 
 TaskManager.defineTask(BACKGROUND_FETCH_TASK, () => {
-  try {
-	  console.log("BACKGROUND_FETCH_TASK");
-    CryptoModule.RSA_KeyPair_Maker();
-    return BackgroundFetch.Result.NewData;
-  } catch (error) {
-    return BackgroundFetch.Result.Failed;
-  }
+	try {
+		console.log('BACKGROUND_FETCH_TASK');
+		CryptoModule.RSA_KeyPair_Maker();
+		return BackgroundFetch.Result.NewData;
+	} catch (error) {
+		return BackgroundFetch.Result.Failed;
+	}
 });
 
-export default function App() {
-useEffect(() => {
-  // 이 부분은 앱이 로드될 때 바로 실행됩니다.
-  console.log("앱이 시작됨");
-  CryptoModule.RSA_KeyPair_Maker();
-
+function IntervalKeyMaking() {
+	// 이 부분은 앱이 로드될 때 바로 실행됩니다.
+	console.log('RSA_KeyPair_Maker');
+	CryptoModule.RSA_KeyPair_Maker();
+	/*
   const registerBackgroundFetch = async () => {
     await BackgroundFetch.registerTaskAsync(BACKGROUND_FETCH_TASK, {
       minimumInterval: 6,  // 15분마다
-    });
-  };
+	  
+	    registerBackgroundFetch();
+    });*/
+	console.log('END RSA_KeyPair_Maker\n\n');
+	setTimeout(IntervalKeyMaking, 5000);
+}
 
-  registerBackgroundFetch();
-}, []);
+export default function App() {
+	useEffect(() => {
+		// 렌더링이 완료된 후 3초 뒤에 IntervalKeyMaking 함수를 실행합니다.
+		const timer = setTimeout(() => {
+			IntervalKeyMaking();
+		}, 3000); // 3000 밀리초 후에 실행
+
+		// 컴포넌트가 언마운트될 때 타이머를 제거합니다.
+		return () => {
+			clearTimeout(timer);
+		};
+	}, []);
 
 	return (
 		<PaperProvider>
@@ -50,5 +64,3 @@ useEffect(() => {
 		</PaperProvider>
 	);
 }
-
-
