@@ -1,3 +1,5 @@
+//App.tsx
+
 import React, { useState, useEffect } from 'react';
 import { Appearance } from 'react-native';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
@@ -8,6 +10,7 @@ import * as BackgroundFetch from 'expo-background-fetch';
 import ChatScreen from './ChatScreen';
 import HomeScreen from './HomeScreen';
 import ProfileScreen from './ProfileScreen';
+import SecurityScreen from './SecurityScreen';
 import * as CryptoModule from './HybridCryptoModule'; // Task 등록 함수를 여기서 불러옵니다.
 import { useNavigation } from '@react-navigation/native';
 
@@ -24,10 +27,10 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, () => {
 	}
 });
 
-function IntervalKeyMaking() {
+async function IntervalKeyMaking () {
 	// 이 부분은 앱이 로드될 때 바로 실행됩니다.
 	console.log('RSA_KeyPair_Maker');
-	CryptoModule.RSA_KeyPair_Maker();
+	await CryptoModule.RSA_KeyPair_Maker();
 	/*
   const registerBackgroundFetch = async () => {
     await BackgroundFetch.registerTaskAsync(BACKGROUND_FETCH_TASK, {
@@ -36,7 +39,7 @@ function IntervalKeyMaking() {
 	    registerBackgroundFetch();
     });*/
 	console.log('END RSA_KeyPair_Maker\n\n');
-	setTimeout(IntervalKeyMaking, 5000);
+	await setTimeout(IntervalKeyMaking, 10000);
 }
 
 export default function App() {
@@ -59,6 +62,7 @@ export default function App() {
 					<Tab.Screen name="Home" component={HomeScreen} />
 					<Tab.Screen name="Chat" component={ChatScreen} />
 					<Tab.Screen name="Profile" component={ProfileScreen} />
+					<Tab.Screen name="Security" component={SecurityScreen} />
 				</Tab.Navigator>
 			</NavigationContainer>
 		</PaperProvider>
