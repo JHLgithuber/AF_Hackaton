@@ -10,19 +10,34 @@ import HomeScreen from './HomeScreen';
 import ProfileScreen from './ProfileScreen';
 import * as CryptoModule from './HybridCryptoModule'; // Task 등록 함수를 여기서 불러옵니다.
 
-
+const BACKGROUND_FETCH_TASK = 'background-fetch-task';
 const Tab = createBottomTabNavigator(); 
 
+TaskManager.defineTask(BACKGROUND_FETCH_TASK, () => {
+  try {
+	  console.log("BACKGROUND_FETCH_TASK");
+    CryptoModule.RSA_KeyPair_Maker();
+    return BackgroundFetch.Result.NewData;
+  } catch (error) {
+    return BackgroundFetch.Result.Failed;
+  }
+});
+
 export default function App() {
-	
 useEffect(() => {
-    if (true) {
-      CryptoModule.RSA_KeyPair_Maker();
-    }
-    
-    return () => console.log("컴포넌트 파괴, 언마운트 됨")
-  }, []); 
-	
+  // 이 부분은 앱이 로드될 때 바로 실행됩니다.
+  console.log("앱이 시작됨");
+  CryptoModule.RSA_KeyPair_Maker();
+
+  const registerBackgroundFetch = async () => {
+    await BackgroundFetch.registerTaskAsync(BACKGROUND_FETCH_TASK, {
+      minimumInterval: 6,  // 15분마다
+    });
+  };
+
+  registerBackgroundFetch();
+}, []);
+
 	return (
 		<PaperProvider>
 			<NavigationContainer>
