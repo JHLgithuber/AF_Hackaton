@@ -63,7 +63,7 @@ const toggleSwitch = () => {
 					activeOpacity={0.4}
 					onPress={CryptoModule.Remove_RSA_KeyTable}
 				>
-					<Text style={{ color: 'white' }}>Remove RSA KeyPair</Text>
+					<Text style={{ color: 'white' }}>RSA KeyPair 초기화</Text>
 				</TouchableOpacity>
 			</View>
 		</View>

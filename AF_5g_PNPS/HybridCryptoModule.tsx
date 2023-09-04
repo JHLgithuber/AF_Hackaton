@@ -1,6 +1,7 @@
 //HybridCryptoMosule.js
 //import 'react-native-rsa-expo';
 //https://www.npmjs.com/package/react-native-rsa-expo
+import React, { useState, useEffect } from 'react';
 import * as SQLite from 'expo-sqlite';
 import * as Crypto from 'expo-crypto';
 import * as TaskManager from 'expo-task-manager';
@@ -111,6 +112,59 @@ export const RSA_KeyPair_Maker = () => {
 		} catch (error) {
 			console.error('An error occurred:', error);
 		}
+	});
+};
+
+//상대의 공개키로 암호화
+export const Encryption = (publicKey) => {};
+
+//자신의 비밀키로 복호화
+export const Decryption = (public_key_hash, server_key_hash, encrypt_AES_Key, encrypt_data) => {
+	let PrivateKey = null;
+	KeyPair_DB.transaction((tx) => {
+		tx.executeSql(
+			`SELECT encrypted_private_key
+				FROM KeyTable
+				WHERE public_key_hash = ?;`,
+			[public_key_hash],
+			(_, { rows }) => {
+				console.log('Select from KeyTable for Decryption: ', rows._array[0]);
+				//resolve(rows._array);
+			},
+			(_, err) => {
+				console.log('Select KeyTable for Decryption ERROR: ', err);
+				//reject(err);
+				return false;
+			}
+		);
+	}); //공개키 해시 기반으로 비밀키 추출
+};
+
+export const Get_PublicKey = () => {
+	//미사용 Key Pair 추출
+	return new Promise((resolve, reject) => {
+		KeyPair_DB.transaction((tx) => {
+			tx.executeSql(
+				`SELECT public_key FROM KeyTable
+				ORDER BY
+				CASE WHEN used_date IS NULL THEN 1 ELSE 2 END ASC,
+				CASE WHEN used_date IS NULL THEN generated_date ELSE used_date END ASC
+				LIMIT 1;`,
+				[],
+				(_, { rows }) => {
+					console.log(
+						'Select from KeyTable for Get_PublicKey: ',
+						rows._array[0].public_key
+					);
+					resolve(rows._array[0].public_key);
+				},
+				(_, err) => {
+					console.log('Select KeyTable for Get_PublicKey ERROR: ', err);
+					//reject(err);
+					return false;
+				}
+			);
+		});
 	});
 };
 

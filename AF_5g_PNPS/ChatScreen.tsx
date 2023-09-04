@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { GiftedChat, IMessage } from 'react-native-gifted-chat';
 import * as SQLite from 'expo-sqlite';
-//import HybridCryptoModule from './HybridCryptoModule.js';
+import * as CryptoModule from './HybridCryptoModule';
 
 // 채팅 저장을 위한 SQLite 데이터베이스를 열기
 const Chat_DB = SQLite.openDatabase('Encrypted_Chat_Data.db');
 
 export default function ChatScreen() {
 	const RoomName = 'test_room';
-	const UserID = 100
-	const UserName= "이진형"
-	
+	const UserID = 100;
+	const UserName = '이진형';
+
 	const [messages, setMessages] = useState([]);
 
 	const fetchMessages = () => {
@@ -75,7 +75,6 @@ export default function ChatScreen() {
 
 	const onSend = (newMessages = []) => {
 		setMessages((prevMessages) => GiftedChat.append(prevMessages, newMessages));
-
 		newMessages.forEach((message) => {
 			if (message.text === '/r') {
 				// 테이블 삭제
@@ -98,7 +97,7 @@ export default function ChatScreen() {
 				return; // 이후 처리를 중단
 			}
 			//console.log(typeof parseInt(message._id, 10));
-
+			CryptoModule.Encryption();//메시지 암호화
 			// 기존의 메시지 삽입 로직
 			Chat_DB.transaction((tx) => {
 				tx.executeSql(
@@ -156,6 +155,8 @@ export default function ChatScreen() {
 				}
 			);
 		});
+		
+		CryptoModule.Decryption();
 	};
 
 	useEffect(() => {
@@ -163,17 +164,26 @@ export default function ChatScreen() {
 		fetchMessages();
 	}, []);
 
-	/*useEffect(() => {
-		console.log(UserID);
-		const timer = setTimeout(() => {
-			const newMessage: IMessage = {
-				text: '자동으로 받은 메시지입니다.',
+	//수신이 잘 되는지 테스트
+	useEffect(() => {
+		console.log("수신테스트: ",UserID);
+		let messageText='자동으로 받은 메시지입니다.'
+		const timer = setTimeout(async() => {
+			
+			let public_key=await CryptoModule.Get_PublicKey();
+			
+			
+			const newMessage = {
+				text: messageText,
 				createdAt: new Date(),
 				user: {
 					_id: 3,
 					name: '시스템',
 				},
+				encrypt_AES_Key:"??"
 			};
+			
+			//console.log(newMessage);
 
 			onReceive(newMessage);
 		}, 10000); // 10초 후에 메시지를 받습니다.
@@ -181,7 +191,7 @@ export default function ChatScreen() {
 		return () => {
 			clearTimeout(timer);
 		};
-	}, [messages]);*/
+	}, [messages]);
 
 	return (
 		<GiftedChat
