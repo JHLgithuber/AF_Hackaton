@@ -12,48 +12,39 @@ import HomeScreen from './HomeScreen';
 import ProfileScreen from './ProfileScreen';
 import SecurityScreen from './SecurityScreen';
 import * as CryptoModule from './HybridCryptoModule'; // Task 등록 함수를 여기서 불러옵니다.
-import { useNavigation } from '@react-navigation/native';
 
 const BACKGROUND_FETCH_TASK = 'background-fetch-task';
 const Tab = createBottomTabNavigator();
 
-TaskManager.defineTask(BACKGROUND_FETCH_TASK, () => {
-	try {
-		console.log('BACKGROUND_FETCH_TASK');
-		CryptoModule.RSA_KeyPair_Maker();
-		return BackgroundFetch.Result.NewData;
-	} catch (error) {
-		return BackgroundFetch.Result.Failed;
-	}
-});
-
-async function IntervalKeyMaking () {
-	// 이 부분은 앱이 로드될 때 바로 실행됩니다.
-	console.log('RSA_KeyPair_Maker');
-	await CryptoModule.RSA_KeyPair_Maker();
-	/*
-  const registerBackgroundFetch = async () => {
-    await BackgroundFetch.registerTaskAsync(BACKGROUND_FETCH_TASK, {
-      minimumInterval: 6,  // 15분마다
-	  
-	    registerBackgroundFetch();
-    });*/
-	console.log('END RSA_KeyPair_Maker\n\n');
-	await setTimeout(IntervalKeyMaking, 10000);
-}
+  const executeKeyMaking = async () => {
+    try {
+      console.log("RSA_KeyPair_Maker");
+      await CryptoModule.RSA_KeyPair_Maker();
+      console.log("END RSA_KeyPair_Maker\n\n");
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
 export default function App() {
-	useEffect(() => {
-		// 렌더링이 완료된 후 3초 뒤에 IntervalKeyMaking 함수를 실행합니다.
-		const timer = setTimeout(() => {
-			IntervalKeyMaking();
-		}, 3000); // 3000 밀리초 후에 실행
+	const [Making_RSA_Key, setMaking_RSA_Key] = useState(false);
+	let timerId;
+  useEffect(() => {
+    let timerId;
+    if (Making_RSA_Key) {
+      timerId = setTimeout(async () => {
+        await executeKeyMaking();
+		  setMaking_RSA_Key(false);
+        clearTimeout(timerId);
+      }, 5000);
+    } else {
+      clearTimeout(timerId);
+    }
 
-		// 컴포넌트가 언마운트될 때 타이머를 제거합니다.
-		return () => {
-			clearTimeout(timer);
-		};
-	}, []);
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [Making_RSA_Key]);
 
 	return (
 		<PaperProvider>
@@ -62,7 +53,9 @@ export default function App() {
 					<Tab.Screen name="Home" component={HomeScreen} />
 					<Tab.Screen name="Chat" component={ChatScreen} />
 					<Tab.Screen name="Profile" component={ProfileScreen} />
-					<Tab.Screen name="Security" component={SecurityScreen} />
+					<Tab.Screen name="Security">
+						{() => <SecurityScreen setMaking_RSA_Key={setMaking_RSA_Key} Making_RSA_Key={Making_RSA_Key} />}
+					</Tab.Screen>
 				</Tab.Navigator>
 			</NavigationContainer>
 		</PaperProvider>

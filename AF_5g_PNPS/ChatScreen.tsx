@@ -97,7 +97,7 @@ export default function ChatScreen() {
 				setMessages([]); // 화면에서 모든 메시지 제거
 				return; // 이후 처리를 중단
 			}
-			console.log(typeof parseInt(message._id, 10));
+			//console.log(typeof parseInt(message._id, 10));
 
 			// 기존의 메시지 삽입 로직
 			Chat_DB.transaction((tx) => {
