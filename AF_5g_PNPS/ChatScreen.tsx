@@ -24,7 +24,7 @@ export default function ChatScreen() {
 					for (let i = 0; i < rows.length; i++) {
 						const item = rows.item(i);
 						const rowMessage: IMessage = {
-							_id: item.pk,
+							_id: item.UUID,
 							text: item.encrypt_data,
 							createdAt: new Date(item.date),
 							user: {
@@ -47,7 +47,7 @@ export default function ChatScreen() {
 	const Make_new_DB = () => {
 		Chat_DB.transaction((tx) => {
 			tx.executeSql(
-				`CREATE TABLE IF NOT EXISTS ${RoomName} (pk INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, sender TEXT, sender_name TEXT, receiver INTEGER, peer_key_hash TEXT, server_key_hash TEXT, encrypt_AES_Key TEXT, encrypt_data BLOB);`,
+				`CREATE TABLE IF NOT EXISTS ${RoomName} (UUID INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, sender TEXT, sender_name TEXT, receiver INTEGER, peer_key_hash TEXT, server_key_hash TEXT, encrypt_AES_Key TEXT, encrypt_data BLOB);`,
 				[],
 				(_, result) => {
 					console.log('Table Create Success:', result);
@@ -62,13 +62,7 @@ export default function ChatScreen() {
 	};
 
 	const generateUniquePK = () => {
-		// 현재의 유닉스 시간을 밀리초 단위로 가져옵니다.
-		const unixTimeMillis = new Date().getTime();
 
-		// 0부터 9999까지 랜덤한 정수를 생성합니다.
-		const randomNumber = Math.floor(Math.random() * 10000);
-
-		// 두 값을 문자열로 변환하고 이어붙여 고유한 PK를 생성합니다.
 		const uniquePK = Crypto.randomUUID();
 
 		return uniquePK;
@@ -102,9 +96,9 @@ export default function ChatScreen() {
 			// 기존의 메시지 삽입 로직
 			Chat_DB.transaction((tx) => {
 				tx.executeSql(
-					`INSERT INTO ${RoomName} (pk, date, sender,sender_name, receiver, peer_key_hash, server_key_hash, encrypt_AES_Key, encrypt_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+					`INSERT INTO ${RoomName} (UUID, date, sender,sender_name, receiver, peer_key_hash, server_key_hash, encrypt_AES_Key, encrypt_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 					[
-						generateUniquePK(),
+						Crypto.randomUUID(),
 						message.createdAt.toISOString(),
 						UserID.toString(),
 						UserName,
@@ -128,16 +122,16 @@ export default function ChatScreen() {
 
 	const onReceive = (newReceivingMessage: IMessage) => {
 		// 새로운 메시지 객체를 생성하고 _id에 고유한 PK를 할당
-		const updatedMessage = { ...newReceivingMessage, _id: generateUniquePK() };
+		const updatedMessage = { ...newReceivingMessage, _id: Crypto.randomUUID() };
 		setMessages((prevMessages) => GiftedChat.append(prevMessages, [updatedMessage]));
 
 		// 메시지 수신 로직
 		// 데이터베이스에 새로운 수신 메시지를 저장
 		Chat_DB.transaction((tx) => {
 			tx.executeSql(
-				`INSERT INTO ${RoomName} (pk, date, sender, sender_name, receiver, peer_key_hash, server_key_hash, encrypt_AES_Key, encrypt_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+				`INSERT INTO ${RoomName} (UUID, date, sender, sender_name, receiver, peer_key_hash, server_key_hash, encrypt_AES_Key, encrypt_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 				[
-					generateUniquePK(),
+					Crypto.randomUUID(),
 					newReceivingMessage.createdAt.toISOString(),
 					newReceivingMessage.user._id,
 					newReceivingMessage.user.name,
