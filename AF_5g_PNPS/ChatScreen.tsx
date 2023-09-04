@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { GiftedChat, IMessage } from 'react-native-gifted-chat';
 import * as SQLite from 'expo-sqlite';
 import * as CryptoModule from './HybridCryptoModule';
+import * as Crypto from 'expo-crypto';
 
 // 채팅 저장을 위한 SQLite 데이터베이스를 열기
 const Chat_DB = SQLite.openDatabase('Encrypted_Chat_Data.db');
@@ -68,7 +69,7 @@ export default function ChatScreen() {
 		const randomNumber = Math.floor(Math.random() * 10000);
 
 		// 두 값을 문자열로 변환하고 이어붙여 고유한 PK를 생성합니다.
-		const uniquePK = String(unixTimeMillis) + String(randomNumber);
+		const uniquePK = Crypto.randomUUID();
 
 		return uniquePK;
 	};
@@ -164,23 +165,25 @@ export default function ChatScreen() {
 		fetchMessages();
 	}, []);
 
-	//수신이 잘 되는지 테스트
+	//수신이 잘 되는지 테스트, 전송하듯이 구현
 	useEffect(() => {
 		console.log("수신테스트: ",UserID);
 		let messageText='자동으로 받은 메시지입니다.'
 		const timer = setTimeout(async() => {
 			
 			let public_key=await CryptoModule.Get_PublicKey();
+			//console.log(messageText);
+			let encrypted=await CryptoModule.Encryption(public_key,null,messageText);
+			console.log(encrypted);
 			
 			
 			const newMessage = {
-				text: messageText,
+				text: encrypted[0],
 				createdAt: new Date(),
 				user: {
 					_id: 3,
 					name: '시스템',
 				},
-				encrypt_AES_Key:"??"
 			};
 			
 			//console.log(newMessage);

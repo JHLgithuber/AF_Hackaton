@@ -11,10 +11,12 @@
     "@react-navigation/bottom-tabs": "^6.5.8",
     "@react-navigation/native": "^6.1.7",
     "@react-navigation/stack": "^6.3.17",
-    "crypto-js": "^4.1.1",
+    "base-64": "^1.0.0",
+    "crypto-js": "3.1.9-1",
     "expo": "^49.0.0",
     "expo-background-fetch": "~11.3.0",
     "expo-crypto": "~12.4.1",
+    "expo-splash-screen": "~0.20.5",
     "expo-sqlite": "~11.3.2",
     "expo-status-bar": "~1.6.0",
     "expo-task-manager": "~11.3.0",
@@ -26,8 +28,7 @@
     "react-native-rsa": "^0.0.3",
     "react-native-rsa-expo": "^0.0.4",
     "react-native-rsa-native": "^2.0.5",
-    "react-native-workers": "^0.3.1",
-    "expo-splash-screen": "~0.20.5"
+    "react-native-workers": "^0.3.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

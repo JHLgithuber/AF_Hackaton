@@ -1,6 +1,7 @@
 //HybridCryptoMosule.js
 //import 'react-native-rsa-expo';
 //https://www.npmjs.com/package/react-native-rsa-expo
+//https://www.npmjs.com/package/crypto-js
 import React, { useState, useEffect } from 'react';
 import * as SQLite from 'expo-sqlite';
 import * as Crypto from 'expo-crypto';
@@ -8,6 +9,8 @@ import * as TaskManager from 'expo-task-manager';
 import * as BackgroundFetch from 'expo-background-fetch';
 import { InteractionManager } from 'react-native';
 import { self } from 'react-native-workers';
+import base64 from 'base-64';
+import CryptoJS from 'crypto-js';
 
 const KeyPair_DB = SQLite.openDatabase('Encrypted_Chat_Data.db');
 const RSAKey = require('react-native-rsa');
@@ -116,7 +119,52 @@ export const RSA_KeyPair_Maker = () => {
 };
 
 //상대의 공개키로 암호화
-export const Encryption = (publicKey) => {};
+/*
+export const Encryption = (publicKey, serverKey, data) => {
+	const rsa = new RSAKey();
+	rsa.setPublicString(publicKey);	//공개키 설정
+	console.log("들어온 데이터:	",data);	//들어온 데이터 확인
+	
+	//AES 암호화
+	const AESKey=btoa(String.fromCharCode.apply(null, Crypto.getRandomValues(new Uint8Array(32)));
+	console.log("AESKey",AESKey);
+	var CryptoJS = require("crypto-js");
+	const ciphertext = CryptoJS.AES.encrypt(data, AESKey).toString();
+	//const originText = data;
+	const encrypted_AESKey = rsa.encrypt(AESKey);
+	return encrypted;
+};*/
+
+export const Encryption = (publicKey, serverKey, data) => {
+  try {
+    const rsa = new RSAKey();
+    rsa.setPublicString(publicKey);
+
+    // AES 암호화 키 생성
+    const randomBytes = Crypto.getRandomValues(new Uint8Array(32));
+    const AESKey = base64.encode(String.fromCharCode.apply(null, randomBytes));
+	  console.log("AESKey",AESKey)
+  
+    //console.log("AESKey in Base64:", typeof(AESKey));
+  
+    // Base64 디코딩하여 WordArray 형식으로 변환
+    //const AESKeyWordArray = CryptoJS.enc.Base64.parse(AESKey);
+  	
+    const ciphertext = CryptoJS.AES.encrypt(data, AESKey).toString();
+  console.log("ciphertext",ciphertext);
+    const encrypted_AESKey = rsa.encrypt(AESKey);
+	  console.log("encrypted_AESKey",encrypted_AESKey);
+  
+    return [ciphertext,encrypted_AESKey];
+	  
+  } catch (error) {
+    console.error("Encryption failed:", error);
+    return null;
+  }
+};
+
+
+
 
 //자신의 비밀키로 복호화
 export const Decryption = (public_key_hash, server_key_hash, encrypt_AES_Key, encrypt_data) => {
