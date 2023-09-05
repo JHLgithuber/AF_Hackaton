@@ -11,6 +11,7 @@ import { InteractionManager } from 'react-native';
 import { self } from 'react-native-workers';
 import base64 from 'base-64';
 import CryptoJS from 'crypto-js';
+import Toast from 'react-native-root-toast';
 
 const KeyPair_DB = SQLite.openDatabase('Encrypted_Chat_Data.db');
 const RSAKey = require('react-native-rsa');
@@ -75,6 +76,7 @@ KeyPair_DB.transaction((tx) => {
 });*/
 
 export const RSA_KeyPair_Maker = () => {
+	const toast = Toast.show('RSA KeyPair 생성중...');
 	Make_RSA_KeyTable();
 	InteractionManager.runAfterInteractions(async () => {
 		try {
@@ -112,105 +114,85 @@ export const RSA_KeyPair_Maker = () => {
 					}
 				);
 			});
+			Toast.hide(toast);
 		} catch (error) {
+			Toast.hide(toast);
 			console.error('An error occurred:', error);
 		}
 	});
 };
 
 //상대의 공개키로 암호화
-/*
 export const Encryption = (publicKey, serverKey, data) => {
-	const rsa = new RSAKey();
-	rsa.setPublicString(publicKey);	//공개키 설정
-	console.log("들어온 데이터:	",data);	//들어온 데이터 확인
-	
-	//AES 암호화
-	const AESKey=btoa(String.fromCharCode.apply(null, Crypto.getRandomValues(new Uint8Array(32)));
-	console.log("AESKey",AESKey);
-	var CryptoJS = require("crypto-js");
-	const ciphertext = CryptoJS.AES.encrypt(data, AESKey).toString();
-	//const originText = data;
-	const encrypted_AESKey = rsa.encrypt(AESKey);
-	return encrypted;
-};*/
+	try {
+		const rsa = new RSAKey();
+		rsa.setPublicString(publicKey);
 
-export const Encryption = (publicKey, serverKey, data) => {
-  try {
-    const rsa = new RSAKey();
-    rsa.setPublicString(publicKey);
+		// AES 암호화 키 생성
+		const randomBytes = Crypto.getRandomValues(new Uint8Array(32));
+		const AESKey = base64.encode(String.fromCharCode.apply(null, randomBytes));
+		console.log('AESKey', AESKey);
 
-    // AES 암호화 키 생성
-    const randomBytes = Crypto.getRandomValues(new Uint8Array(32));
-    const AESKey = base64.encode(String.fromCharCode.apply(null, randomBytes));
-	  console.log("AESKey",AESKey)
-  
-    //console.log("AESKey in Base64:", typeof(AESKey));
-  
-    // Base64 디코딩하여 WordArray 형식으로 변환
-    //const AESKeyWordArray = CryptoJS.enc.Base64.parse(AESKey);
-  	
-    const ciphertext = CryptoJS.AES.encrypt(data, AESKey).toString();
-  console.log("ciphertext",ciphertext);
-    const encrypted_AESKey = rsa.encrypt(AESKey);
-	  console.log("encrypted_AESKey",encrypted_AESKey);
-  
-    return {ciphertext,encrypted_AESKey};
-	  
-  } catch (error) {
-    console.error("Encryption failed:", error);
-    return null;
-  }
+		//console.log("AESKey in Base64:", typeof(AESKey));
+
+		// Base64 디코딩하여 WordArray 형식으로 변환
+		//const AESKeyWordArray = CryptoJS.enc.Base64.parse(AESKey);
+
+		const ciphertext = CryptoJS.AES.encrypt(data, AESKey).toString();
+		console.log('ciphertext', ciphertext);
+		const encrypted_AESKey = rsa.encrypt(AESKey);
+		console.log('encrypted_AESKey', encrypted_AESKey);
+
+		return { ciphertext, encrypted_AESKey };
+	} catch (error) {
+		console.error('Encryption failed:', error);
+		return null;
+	}
 };
-
-
-
 
 //자신의 비밀키로 복호화
 export const Decryption = async (public_key_hash, server_key_hash, encrypt_AES_Key, ciphertext) => {
-  let privateKey = null;
-  const rsa = new RSAKey();
+	let privateKey = null;
+	const rsa = new RSAKey();
 
-  // 공개키 해시 기반으로 비밀키 추출
-  await new Promise((resolve, reject) => {
-    KeyPair_DB.transaction((tx) => {
-      tx.executeSql(
-        `SELECT encrypted_private_key FROM KeyTable WHERE public_key_hash = ?;`,
-        [public_key_hash],
-        (_, { rows }) => {
-          console.log('Select from KeyTable for Decryption: ', rows._array[0]);
-          privateKey = rows._array[0].encrypted_private_key;
-			console.log("privateKey",privateKey)
-          resolve();
-        },
-        (_, err) => {
-          console.log('Select KeyTable for Decryption ERROR: ', err);
-          reject(err);
-        }
-      );
-    });
-  });
+	// 공개키 해시 기반으로 비밀키 추출
+	await new Promise((resolve, reject) => {
+		KeyPair_DB.transaction((tx) => {
+			tx.executeSql(
+				`SELECT encrypted_private_key FROM KeyTable WHERE public_key_hash = ?;`,
+				[public_key_hash],
+				(_, { rows }) => {
+					console.log('Select from KeyTable for Decryption: ', rows._array[0]);
+					privateKey = rows._array[0].encrypted_private_key;
+					console.log('privateKey', privateKey);
+					resolve();
+				},
+				(_, err) => {
+					console.log('Select KeyTable for Decryption ERROR: ', err);
+					reject(err);
+				}
+			);
+		});
+	});
 
-	
-  if (privateKey === null) {
-    console.log("privateKey",privateKey)
-    return null;
-  }
+	if (privateKey === null) {
+		console.log('privateKey', privateKey);
+		return null;
+	}
 
-  rsa.setPrivateString(privateKey);
-  const AES_KEY = rsa.decrypt(encrypt_AES_Key);
-	console.log("AES_KEY",AES_KEY)
-  var bytes = CryptoJS.AES.decrypt(ciphertext, AES_KEY);
+	rsa.setPrivateString(privateKey);
+	const AES_KEY = rsa.decrypt(encrypt_AES_Key);
+	console.log('AES_KEY', AES_KEY);
+	var bytes = CryptoJS.AES.decrypt(ciphertext, AES_KEY);
 	var originalData = bytes.toString(CryptoJS.enc.Utf8);
-	console.log("Decrypted_data",originalData);
-  
-  return originalData;
-};
+	console.log('Decrypted_data', originalData);
 
+	return originalData;
+};
 
 export const Get_PublicKey = () => {
 	//미사용 Key Pair 추출
-	return new Promise((resolve, reject) => {
+	return new Promise(async (resolve, reject) => {
 		KeyPair_DB.transaction((tx) => {
 			tx.executeSql(
 				`SELECT public_key, public_key_hash FROM KeyTable
@@ -219,15 +201,29 @@ export const Get_PublicKey = () => {
 				CASE WHEN used_date IS NULL THEN generated_date ELSE used_date END ASC
 				LIMIT 1;`,
 				[],
-				(_, { rows }) => {
-					console.log('Select from KeyTable for Get_PublicKey: ',	rows._array[0]);
-					console.log("Select타입은 ",typeof(rows._array[0]));
-					resolve(rows._array[0]);
+				async (_, { rows }) => {
+					console.log('Select from KeyTable for Get_PublicKey: ', rows._array[0]);
+					console.log('Select타입은 ', typeof rows._array[0]);
+					if (rows._array[0] === undefined) {
+						await RSA_KeyPair_Maker();
+						const newPublicKey = await Get_PublicKey();
+						resolve(newPublicKey);
+					} else {
+						resolve(rows._array[0]);
+					}
 				},
-				(_, err) => {
+				async (_, err) => {
 					console.log('Select KeyTable for Get_PublicKey ERROR: ', err);
-					reject(err);
-					return false;
+
+					if (err.message && err.message.includes('no such table: KeyTable')) {
+						// 'KeyTable' 테이블이 없을 때 수행할 작업
+						await RSA_KeyPair_Maker();
+						const newPublicKey = await Get_PublicKey();
+						resolve(newPublicKey);
+					} else {
+						// 그 외의 에러에 대한 처리
+						reject(err);
+					}
 				}
 			);
 		});

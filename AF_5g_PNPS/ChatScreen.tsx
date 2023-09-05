@@ -221,7 +221,7 @@ const fetchMessages = async () => {
 
 			//console.log(newMessage);
 
-			onReceive(newMessage);
+			await onReceive(newMessage);
 		}, 10000); // 10초 후에 메시지를 받습니다.
 
 		return () => {

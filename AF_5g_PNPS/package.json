@@ -25,6 +25,7 @@
     "react-native-appearance": "^0.0.0",
     "react-native-gifted-chat": "^2.4.0",
     "react-native-paper": "^5.10.3",
+    "react-native-root-toast": "^3.5.1",
     "react-native-rsa": "^0.0.3",
     "react-native-rsa-expo": "^0.0.4",
     "react-native-rsa-native": "^2.0.5",
