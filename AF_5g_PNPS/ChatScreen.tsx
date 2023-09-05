@@ -19,7 +19,7 @@ const fetchMessages = async () => {
     let rowArray = [];
     Chat_DB.transaction((tx) => {
         tx.executeSql(
-            `SELECT * FROM ${RoomName} ORDER BY date DESC LIMIT 20`,
+            `SELECT * FROM ${RoomName} ORDER BY send_date DESC LIMIT 20`,
             [],
             async (_, { rows }) => {  // 비동기로 처리
                 for (let i = 0; i < rows.length; i++) {
@@ -41,7 +41,7 @@ const fetchMessages = async () => {
                     const rowMessage = {
                         _id: item.UUID,
                         text: Decryptied_Data,
-                        createdAt: new Date(item.date),
+                        createdAt: new Date(item.send_date),
                         user: {
                             _id: item.sender,
                             name: item.sender_name,
@@ -65,7 +65,7 @@ const fetchMessages = async () => {
 		Chat_DB.transaction((tx) => {
 			//console.log("DB를 만들까2?")
 			tx.executeSql(
-				`CREATE TABLE IF NOT EXISTS ${RoomName} (UUID TEXT PRIMARY KEY, date TEXT, sender TEXT, sender_name TEXT, receiver INTEGER, peer_key_hash TEXT, server_key_hash TEXT, encrypt_AES_Key TEXT, encrypt_data BLOB);`,
+				`CREATE TABLE IF NOT EXISTS ${RoomName} (UUID TEXT PRIMARY KEY, send_date TEXT, sender TEXT, sender_name TEXT, receiver INTEGER, peer_key_hash TEXT, server_key_hash TEXT, encrypt_AES_Key TEXT, encrypt_data BLOB);`,
 				[],
 				(_, result) => {
 					console.log('Table Create Success:', result);
@@ -80,7 +80,6 @@ const fetchMessages = async () => {
 
 	const onSend = (newMessages = []) => {
 		//console.log(newMessages);
-		setMessages((prevMessages) => GiftedChat.append(prevMessages, newMessages));
 		newMessages.forEach((message) => {
 			if (message.text === '/r') {
 				// 테이블 삭제
@@ -105,9 +104,14 @@ const fetchMessages = async () => {
 			//console.log(typeof parseInt(message._id, 10));
 			//CryptoModule.Encryption();//메시지 암호화
 			// 기존의 메시지 삽입 로직
+			
+			
+			
+			
+			
 			Chat_DB.transaction((tx) => {
 				tx.executeSql(
-					`INSERT INTO ${RoomName} (UUID, date, sender,sender_name, receiver, peer_key_hash, server_key_hash, encrypt_AES_Key, encrypt_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+					`INSERT INTO ${RoomName} (UUID, send_date, sender,sender_name, receiver, peer_key_hash, server_key_hash, encrypt_AES_Key, encrypt_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 					[
 						Crypto.randomUUID(),
 						message.createdAt.toISOString(),
@@ -128,6 +132,7 @@ const fetchMessages = async () => {
 					}
 				);
 			});
+			setMessages((prevMessages) => GiftedChat.append(prevMessages, newMessages));
 		});
 	};
 
@@ -136,7 +141,7 @@ const fetchMessages = async () => {
 		// 데이터베이스에 새로운 수신 메시지를 저장
 		Chat_DB.transaction((tx) => {
 			tx.executeSql(
-				`INSERT INTO ${RoomName} (UUID, date, sender, sender_name, receiver, peer_key_hash, server_key_hash, encrypt_AES_Key, encrypt_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+				`INSERT INTO ${RoomName} (UUID, send_date, sender, sender_name, receiver, peer_key_hash, server_key_hash, encrypt_AES_Key, encrypt_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 				[
 					Crypto.randomUUID(),
 					newReceivingMessage.createdAt.toISOString(),
@@ -199,8 +204,8 @@ const fetchMessages = async () => {
 			console.log(encrypted);
 
 			const newMessage = {
-				ciphertext: encrypted[0],
-				encrypted_AESKey: encrypted[1],
+				ciphertext: encrypted.ciphertext,
+				encrypted_AESKey: encrypted.encrypted_AESKey,
 				public_key_hash: public_key_hash,
 				createdAt: new Date(),
 				user: {

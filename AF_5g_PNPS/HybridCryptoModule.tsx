@@ -155,7 +155,7 @@ export const Encryption = (publicKey, serverKey, data) => {
     const encrypted_AESKey = rsa.encrypt(AESKey);
 	  console.log("encrypted_AESKey",encrypted_AESKey);
   
-    return [ciphertext,encrypted_AESKey];
+    return {ciphertext,encrypted_AESKey};
 	  
   } catch (error) {
     console.error("Encryption failed:", error);
@@ -220,10 +220,7 @@ export const Get_PublicKey = () => {
 				LIMIT 1;`,
 				[],
 				(_, { rows }) => {
-					console.log(
-						'Select from KeyTable for Get_PublicKey: ',
-						rows._array[0]
-					);
+					console.log('Select from KeyTable for Get_PublicKey: ',	rows._array[0]);
 					console.log("Select타입은 ",typeof(rows._array[0]));
 					resolve(rows._array[0]);
 				},
