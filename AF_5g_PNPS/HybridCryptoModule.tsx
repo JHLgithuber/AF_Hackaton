@@ -167,33 +167,51 @@ export const Encryption = (publicKey, serverKey, data) => {
 
 
 //자신의 비밀키로 복호화
-export const Decryption = (public_key_hash, server_key_hash, encrypt_AES_Key, encrypt_data) => {
-	let PrivateKey = null;
-	KeyPair_DB.transaction((tx) => {
-		tx.executeSql(
-			`SELECT encrypted_private_key
-				FROM KeyTable
-				WHERE public_key_hash = ?;`,
-			[public_key_hash],
-			(_, { rows }) => {
-				console.log('Select from KeyTable for Decryption: ', rows._array[0]);
-				//resolve(rows._array);
-			},
-			(_, err) => {
-				console.log('Select KeyTable for Decryption ERROR: ', err);
-				//reject(err);
-				return false;
-			}
-		);
-	}); //공개키 해시 기반으로 비밀키 추출
+export const Decryption = async (public_key_hash, server_key_hash, encrypt_AES_Key, ciphertext) => {
+  let privateKey = null;
+  const rsa = new RSAKey();
+
+  // 공개키 해시 기반으로 비밀키 추출
+  await new Promise((resolve, reject) => {
+    KeyPair_DB.transaction((tx) => {
+      tx.executeSql(
+        `SELECT encrypted_private_key FROM KeyTable WHERE public_key_hash = ?;`,
+        [public_key_hash],
+        (_, { rows }) => {
+          console.log('Select from KeyTable for Decryption: ', rows._array[0]);
+          privateKey = rows._array[0].encrypted_private_key;
+          resolve();
+        },
+        (_, err) => {
+          console.log('Select KeyTable for Decryption ERROR: ', err);
+          reject(err);
+        }
+      );
+    });
+  });
+
+  if (privateKey === null) {
+    // 적절한 에러 처리
+    return null;
+  }
+
+  rsa.setPrivateString(privateKey);
+  const AES_KEY = rsa.decrypt(encrypt_AES_Key);
+	console.log("AES_KEY",AES_KEY)
+  var bytes = CryptoJS.AES.decrypt(ciphertext, AES_KEY);
+	var originalData = bytes.toString(CryptoJS.enc.Utf8);
+	console.log("Decrypted_data",originalData);
+  
+  return originalData;
 };
+
 
 export const Get_PublicKey = () => {
 	//미사용 Key Pair 추출
 	return new Promise((resolve, reject) => {
 		KeyPair_DB.transaction((tx) => {
 			tx.executeSql(
-				`SELECT public_key FROM KeyTable
+				`SELECT public_key, public_key_hash FROM KeyTable
 				ORDER BY
 				CASE WHEN used_date IS NULL THEN 1 ELSE 2 END ASC,
 				CASE WHEN used_date IS NULL THEN generated_date ELSE used_date END ASC
@@ -202,13 +220,14 @@ export const Get_PublicKey = () => {
 				(_, { rows }) => {
 					console.log(
 						'Select from KeyTable for Get_PublicKey: ',
-						rows._array[0].public_key
+						rows._array[0]
 					);
-					resolve(rows._array[0].public_key);
+					console.log("Select타입은 ",typeof(rows._array[0]));
+					resolve(rows._array[0]);
 				},
 				(_, err) => {
 					console.log('Select KeyTable for Get_PublicKey ERROR: ', err);
-					//reject(err);
+					reject(err);
 					return false;
 				}
 			);

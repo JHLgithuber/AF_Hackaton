@@ -45,30 +45,26 @@ export default function ChatScreen() {
 	};
 
 	const Make_new_DB = () => {
+		//console.log("DB를 만들까?")
 		Chat_DB.transaction((tx) => {
+			//console.log("DB를 만들까2?")
 			tx.executeSql(
-				`CREATE TABLE IF NOT EXISTS ${RoomName} (UUID INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, sender TEXT, sender_name TEXT, receiver INTEGER, peer_key_hash TEXT, server_key_hash TEXT, encrypt_AES_Key TEXT, encrypt_data BLOB);`,
+				`CREATE TABLE IF NOT EXISTS ${RoomName} (UUID TEXT PRIMARY KEY, date TEXT, sender TEXT, sender_name TEXT, receiver INTEGER, peer_key_hash TEXT, server_key_hash TEXT, encrypt_AES_Key TEXT, encrypt_data BLOB);`,
 				[],
 				(_, result) => {
 					console.log('Table Create Success:', result);
 					fetchMessages();
 				},
 				(_, err) => {
-					console.log('Table Create Error:', err);
 					return false;
 				}
 			);
 		});
 	};
 
-	const generateUniquePK = () => {
-
-		const uniquePK = Crypto.randomUUID();
-
-		return uniquePK;
-	};
 
 	const onSend = (newMessages = []) => {
+		//console.log(newMessages);
 		setMessages((prevMessages) => GiftedChat.append(prevMessages, newMessages));
 		newMessages.forEach((message) => {
 			if (message.text === '/r') {
@@ -92,7 +88,7 @@ export default function ChatScreen() {
 				return; // 이후 처리를 중단
 			}
 			//console.log(typeof parseInt(message._id, 10));
-			CryptoModule.Encryption();//메시지 암호화
+			//CryptoModule.Encryption();//메시지 암호화
 			// 기존의 메시지 삽입 로직
 			Chat_DB.transaction((tx) => {
 				tx.executeSql(
@@ -120,10 +116,7 @@ export default function ChatScreen() {
 		});
 	};
 
-	const onReceive = (newReceivingMessage: IMessage) => {
-		// 새로운 메시지 객체를 생성하고 _id에 고유한 PK를 할당
-		const updatedMessage = { ...newReceivingMessage, _id: Crypto.randomUUID() };
-		setMessages((prevMessages) => GiftedChat.append(prevMessages, [updatedMessage]));
+	const onReceive = async (newReceivingMessage: IMessage) => {
 
 		// 메시지 수신 로직
 		// 데이터베이스에 새로운 수신 메시지를 저장
@@ -135,11 +128,11 @@ export default function ChatScreen() {
 					newReceivingMessage.createdAt.toISOString(),
 					newReceivingMessage.user._id,
 					newReceivingMessage.user.name,
-					null,
-					null,
-					null,
-					null,
-					newReceivingMessage.text,
+					null,//수신자
+					newReceivingMessage.public_key_hash,//사용자 키 해시
+					null,//서버 키 해시
+					newReceivingMessage.encrypted_AESKey,//암호화된 AES Key
+					newReceivingMessage.ciphertext,
 				],
 				(_, result) => {
 					console.log('Receive Insert Success:', result);
@@ -151,7 +144,27 @@ export default function ChatScreen() {
 			);
 		});
 		
-		CryptoModule.Decryption();
+  try {
+    const Decryptied_Data = await CryptoModule.Decryption(
+      newReceivingMessage.public_key_hash, 
+      null, 
+      newReceivingMessage.encrypted_AESKey, 
+      newReceivingMessage.ciphertext
+    );
+
+    let updatedMessage = { 
+      ...newReceivingMessage, 
+      _id: Crypto.randomUUID(), 
+      text: Decryptied_Data 
+    };
+  
+    setMessages((prevMessages) => GiftedChat.append(prevMessages, [updatedMessage]));
+
+  } catch (err) {
+    console.error('Decryption failed:', err);
+  }
+  
+  console.log("newReceivingMessage", newReceivingMessage);
 	};
 
 	useEffect(() => {
@@ -165,14 +178,19 @@ export default function ChatScreen() {
 		let messageText='자동으로 받은 메시지입니다.'
 		const timer = setTimeout(async() => {
 			
-			let public_key=await CryptoModule.Get_PublicKey();
-			//console.log(messageText);
+			let public_key_object=await CryptoModule.Get_PublicKey();
+			let public_key=public_key_object.public_key;
+			let public_key_hash=public_key_object.public_key_hash;
+			console.log(public_key,public_key_hash);
+			
 			let encrypted=await CryptoModule.Encryption(public_key,null,messageText);
 			console.log(encrypted);
 			
 			
 			const newMessage = {
-				text: encrypted[0],
+				ciphertext: encrypted[0],
+				encrypted_AESKey: encrypted[1],
+				public_key_hash: public_key_hash,
 				createdAt: new Date(),
 				user: {
 					_id: 3,
