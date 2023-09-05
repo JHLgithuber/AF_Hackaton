@@ -14,35 +14,51 @@ export default function ChatScreen() {
 
 	const [messages, setMessages] = useState([]);
 
-	const fetchMessages = () => {
-		let rowArray = [];
-		Chat_DB.transaction((tx) => {
-			tx.executeSql(
-				`SELECT * FROM ${RoomName} ORDER BY date DESC`,
-				[],
-				(_, { rows }) => {
-					for (let i = 0; i < rows.length; i++) {
-						const item = rows.item(i);
-						const rowMessage: IMessage = {
-							_id: item.UUID,
-							text: item.encrypt_data,
-							createdAt: new Date(item.date),
-							user: {
-								_id: item.sender,
-								name: item.sender_name,
-							},
-						};
-						rowArray.push(rowMessage);
-					}
-					setMessages(rowArray);
-				},
-				(_, err) => {
-					console.log('Fetch Error:', err);
-					return false;
-				}
-			);
-		});
-	};
+	
+const fetchMessages = async () => {
+    let rowArray = [];
+    Chat_DB.transaction((tx) => {
+        tx.executeSql(
+            `SELECT * FROM ${RoomName} ORDER BY date DESC LIMIT 20`,
+            [],
+            async (_, { rows }) => {  // 비동기로 처리
+                for (let i = 0; i < rows.length; i++) {
+                    const item = rows.item(i);
+
+                    let Decryptied_Data = null;
+                    try {
+						console.log(item.peer_key_hash);
+                        Decryptied_Data = await CryptoModule.Decryption(  // await 키워드 사용
+                            item.peer_key_hash,
+                            null,
+                            item.encrypt_AES_Key,
+                            item.encrypt_data
+                        );
+                    } catch (err) {
+                        console.error('Decryption failed:', err);
+                    }
+
+                    const rowMessage = {
+                        _id: item.UUID,
+                        text: Decryptied_Data,
+                        createdAt: new Date(item.date),
+                        user: {
+                            _id: item.sender,
+                            name: item.sender_name,
+                        },
+                    };
+                    rowArray.push(rowMessage);
+                }
+                setMessages(rowArray);
+            },
+            (_, err) => {
+                console.log('Fetch Error:', err);
+                return false;
+            }
+        );
+    });
+};
+
 
 	const Make_new_DB = () => {
 		//console.log("DB를 만들까?")
@@ -61,7 +77,6 @@ export default function ChatScreen() {
 			);
 		});
 	};
-
 
 	const onSend = (newMessages = []) => {
 		//console.log(newMessages);
@@ -117,7 +132,6 @@ export default function ChatScreen() {
 	};
 
 	const onReceive = async (newReceivingMessage: IMessage) => {
-
 		// 메시지 수신 로직
 		// 데이터베이스에 새로운 수신 메시지를 저장
 		Chat_DB.transaction((tx) => {
@@ -128,10 +142,10 @@ export default function ChatScreen() {
 					newReceivingMessage.createdAt.toISOString(),
 					newReceivingMessage.user._id,
 					newReceivingMessage.user.name,
-					null,//수신자
-					newReceivingMessage.public_key_hash,//사용자 키 해시
-					null,//서버 키 해시
-					newReceivingMessage.encrypted_AESKey,//암호화된 AES Key
+					null, //수신자
+					newReceivingMessage.public_key_hash, //사용자 키 해시
+					null, //서버 키 해시
+					newReceivingMessage.encrypted_AESKey, //암호화된 AES Key
 					newReceivingMessage.ciphertext,
 				],
 				(_, result) => {
@@ -143,28 +157,27 @@ export default function ChatScreen() {
 				}
 			);
 		});
-		
-  try {
-    const Decryptied_Data = await CryptoModule.Decryption(
-      newReceivingMessage.public_key_hash, 
-      null, 
-      newReceivingMessage.encrypted_AESKey, 
-      newReceivingMessage.ciphertext
-    );
 
-    let updatedMessage = { 
-      ...newReceivingMessage, 
-      _id: Crypto.randomUUID(), 
-      text: Decryptied_Data 
-    };
-  
-    setMessages((prevMessages) => GiftedChat.append(prevMessages, [updatedMessage]));
+		try {
+			const Decryptied_Data = await CryptoModule.Decryption(
+				newReceivingMessage.public_key_hash,
+				null,
+				newReceivingMessage.encrypted_AESKey,
+				newReceivingMessage.ciphertext
+			);
 
-  } catch (err) {
-    console.error('Decryption failed:', err);
-  }
-  
-  console.log("newReceivingMessage", newReceivingMessage);
+			let updatedMessage = {
+				...newReceivingMessage,
+				_id: Crypto.randomUUID(),
+				text: Decryptied_Data,
+			};
+
+			setMessages((prevMessages) => GiftedChat.append(prevMessages, [updatedMessage]));
+		} catch (err) {
+			console.error('Decryption failed:', err);
+		}
+
+		console.log('newReceivingMessage', newReceivingMessage);
 	};
 
 	useEffect(() => {
@@ -174,19 +187,17 @@ export default function ChatScreen() {
 
 	//수신이 잘 되는지 테스트, 전송하듯이 구현
 	useEffect(() => {
-		console.log("수신테스트: ",UserID);
-		let messageText='자동으로 받은 메시지입니다.'
-		const timer = setTimeout(async() => {
-			
-			let public_key_object=await CryptoModule.Get_PublicKey();
-			let public_key=public_key_object.public_key;
-			let public_key_hash=public_key_object.public_key_hash;
-			console.log(public_key,public_key_hash);
-			
-			let encrypted=await CryptoModule.Encryption(public_key,null,messageText);
+		console.log('수신테스트: ', UserID);
+		let messageText = new Date().toString()+'에 자동으로 받은 메시지입니다.';
+		const timer = setTimeout(async () => {
+			let public_key_object = await CryptoModule.Get_PublicKey();
+			let public_key = public_key_object.public_key;
+			let public_key_hash = public_key_object.public_key_hash;
+			console.log(public_key, public_key_hash);
+
+			let encrypted = await CryptoModule.Encryption(public_key, null, messageText);
 			console.log(encrypted);
-			
-			
+
 			const newMessage = {
 				ciphertext: encrypted[0],
 				encrypted_AESKey: encrypted[1],
@@ -197,7 +208,7 @@ export default function ChatScreen() {
 					name: '시스템',
 				},
 			};
-			
+
 			//console.log(newMessage);
 
 			onReceive(newMessage);

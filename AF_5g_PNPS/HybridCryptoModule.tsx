@@ -180,6 +180,7 @@ export const Decryption = async (public_key_hash, server_key_hash, encrypt_AES_K
         (_, { rows }) => {
           console.log('Select from KeyTable for Decryption: ', rows._array[0]);
           privateKey = rows._array[0].encrypted_private_key;
+			console.log("privateKey",privateKey)
           resolve();
         },
         (_, err) => {
@@ -190,8 +191,9 @@ export const Decryption = async (public_key_hash, server_key_hash, encrypt_AES_K
     });
   });
 
+	
   if (privateKey === null) {
-    // 적절한 에러 처리
+    console.log("privateKey",privateKey)
     return null;
   }
 
