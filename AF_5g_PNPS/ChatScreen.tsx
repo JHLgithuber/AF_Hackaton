@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { View, ActivityIndicator } from 'react-native';
 import { GiftedChat, IMessage } from 'react-native-gifted-chat';
 import * as SQLite from 'expo-sqlite';
 import * as CryptoModule from './HybridCryptoModule';
@@ -13,13 +14,15 @@ export default function ChatScreen() {
 	const UserName = '이진형';
 
 	const [messages, setMessages] = useState([]);
+	const [isLoading, setIsLoading] = useState(false); // ActivityIndicator 상태 관리를 위한 상태 변수
 
 	
 const fetchMessages = async () => {
     let rowArray = [];
+	setIsLoading(true);
     Chat_DB.transaction((tx) => {
         tx.executeSql(
-            `SELECT * FROM ${RoomName} ORDER BY send_date DESC LIMIT 20`,
+            `SELECT * FROM ${RoomName} ORDER BY send_date DESC LIMIT 5`,
             [],
             async (_, { rows }) => {  // 비동기로 처리
                 for (let i = 0; i < rows.length; i++) {
@@ -49,9 +52,11 @@ const fetchMessages = async () => {
                     };
                     rowArray.push(rowMessage);
                 }
+				setIsLoading(false); // 로딩 종료
                 setMessages(rowArray);
             },
             (_, err) => {
+				setIsLoading(false); // 로딩 종료
                 console.log('Fetch Error:', err);
                 return false;
             }
@@ -78,12 +83,12 @@ const fetchMessages = async () => {
 		});
 	};
 
-	const onSend = (newMessages = []) => {
+	const onSend = async (newMessages = []) => {
 		//console.log(newMessages);
-		newMessages.forEach((message) => {
+		await newMessages.forEach(async (message) => {
 			if (message.text === '/r') {
 				// 테이블 삭제
-				Chat_DB.transaction((tx) => {
+				await Chat_DB.transaction((tx) => {
 					tx.executeSql(
 						`DROP TABLE IF EXISTS ${RoomName};`,
 						[],
@@ -98,18 +103,20 @@ const fetchMessages = async () => {
 						}
 					);
 				});
-				setMessages([]); // 화면에서 모든 메시지 제거
+				await setMessages([]); // 화면에서 모든 메시지 제거
 				return; // 이후 처리를 중단
 			}
 			//console.log(typeof parseInt(message._id, 10));
 			//CryptoModule.Encryption();//메시지 암호화
 			// 기존의 메시지 삽입 로직
+			console.log("SendingMessage",message);
+			let public_key_object = await CryptoModule.Get_PublicKey();
+			let encrypted = await CryptoModule.Encryption(public_key_object.public_key, null, message.text);
 			
 			
 			
 			
-			
-			Chat_DB.transaction((tx) => {
+			await Chat_DB.transaction((tx) => {
 				tx.executeSql(
 					`INSERT INTO ${RoomName} (UUID, send_date, sender,sender_name, receiver, peer_key_hash, server_key_hash, encrypt_AES_Key, encrypt_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 					[
@@ -117,11 +124,11 @@ const fetchMessages = async () => {
 						message.createdAt.toISOString(),
 						UserID.toString(),
 						UserName,
-						null,
-						null,
-						null,
-						null,
-						message.text,
+						null,//수신자
+						public_key_object.public_key_hash,
+						null,//서버키 해시
+						encrypted.encrypted_AESKey,
+						encrypted.ciphertext,
 					],
 					(_, result) => {
 						console.log('Insert Success:', result);
@@ -132,7 +139,7 @@ const fetchMessages = async () => {
 					}
 				);
 			});
-			setMessages((prevMessages) => GiftedChat.append(prevMessages, newMessages));
+			await setMessages((prevMessages) => GiftedChat.append(prevMessages, newMessages));
 		});
 	};
 
@@ -196,17 +203,15 @@ const fetchMessages = async () => {
 		let messageText = new Date().toString()+'에 자동으로 받은 메시지입니다.';
 		const timer = setTimeout(async () => {
 			let public_key_object = await CryptoModule.Get_PublicKey();
-			let public_key = public_key_object.public_key;
-			let public_key_hash = public_key_object.public_key_hash;
-			console.log(public_key, public_key_hash);
+			//console.log(public_key_object.public_key, public_key_object.public_key_hash);
 
-			let encrypted = await CryptoModule.Encryption(public_key, null, messageText);
+			let encrypted = await CryptoModule.Encryption(public_key_object.public_key, null, messageText);
 			console.log(encrypted);
 
 			const newMessage = {
 				ciphertext: encrypted.ciphertext,
 				encrypted_AESKey: encrypted.encrypted_AESKey,
-				public_key_hash: public_key_hash,
+				public_key_hash: public_key_object.public_key_hash,
 				createdAt: new Date(),
 				user: {
 					_id: 3,
@@ -225,13 +230,21 @@ const fetchMessages = async () => {
 	}, [messages]);
 
 	return (
-		<GiftedChat
-			messages={messages}
-			onSend={(newMessages) => onSend(newMessages)}
-			user={{
-				_id: UserID.toString(),
-				name: UserName,
-			}}
-		/>
+		<View style={{ flex: 1 }}>
+			{isLoading ? (
+				<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+					<ActivityIndicator size="large" color="#0000ff" />
+				</View>
+			) : (
+				<GiftedChat
+					messages={messages}
+					onSend={(newMessages) => onSend(newMessages)}
+					user={{
+						_id: UserID.toString(),
+						name: UserName,
+					}}
+				/>
+			)}
+		</View>
 	);
 }
