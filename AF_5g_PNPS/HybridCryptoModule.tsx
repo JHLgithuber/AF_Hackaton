@@ -76,16 +76,16 @@ KeyPair_DB.transaction((tx) => {
 });*/
 
 export const RSA_KeyPair_Maker = () => {
-	const toast = Toast.show('RSA KeyPair 생성중...');
 	Make_RSA_KeyTable();
 	InteractionManager.runAfterInteractions(async () => {
+		const toast = Toast.show('RSA KeyPair 생성중...');
 		try {
 			console.log('Making_RSA_Key_Pair...');
 			var Start_MakingKey = new Date();
 			console.log('MakingKey Time:\t', Start_MakingKey);
 
 			const rsa = new RSAKey();
-			rsa.generate(bits, exponent);
+			await rsa.generate(bits, exponent);
 			const publicKey = rsa.getPublicString(); // return json encoded string
 			const privateKey = rsa.getPrivateString(); // return json encoded string
 			console.log('publicKey:\t', publicKey);
