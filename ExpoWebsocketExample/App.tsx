@@ -1,17 +1,18 @@
 import React, { useEffect } from 'react';
-import { View, Text } from 'react-native';
-import io from 'socket.io-client';
+import { Text, View, Button } from 'react-native';
+import { io } from 'socket.io-client';
 
 export default function App() {
   useEffect(() => {
-    const socket = io('http://flaskwstest.run.goorm.site:5000');
+    const socket = io('http://3.36.111.111:55369');
     
     socket.on('connect', () => {
-      console.log('Connected to server');
+      console.log('connected to server');
+      socket.emit('message', 'Hello from client');
     });
 
     socket.on('message', (message) => {
-      console.log('New message:', message);
+      console.log(`Message from server: ${message}`);
     });
 
     return () => {
@@ -21,7 +22,7 @@ export default function App() {
 
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Check your console for WebSocket messages</Text>
+      <Text>WebSocket Example</Text>
     </View>
   );
 }
