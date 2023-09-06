@@ -1,4 +1,4 @@
-//HybridCryptoMosule.js
+//HybridCryptoMosule.tsx
 //import 'react-native-rsa-expo';
 //https://www.npmjs.com/package/react-native-rsa-expo
 //https://www.npmjs.com/package/crypto-js

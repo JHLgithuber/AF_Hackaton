@@ -1,3 +1,4 @@
+//ChatScreen.tsx
 import React, { useState, useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { GiftedChat, IMessage } from 'react-native-gifted-chat';
