@@ -79,7 +79,7 @@ export const RSA_KeyPair_Maker = () => {
 	Make_RSA_KeyTable();
 	InteractionManager.runAfterInteractions(async () => {
 		const toast = Toast.show('RSA KeyPair 생성중...');
-		try {
+		try{
 			console.log('Making_RSA_Key_Pair...');
 			var Start_MakingKey = new Date();
 			console.log('MakingKey Time:\t', Start_MakingKey);
@@ -152,43 +152,50 @@ export const Encryption = (publicKey, serverKey, data) => {
 
 //자신의 비밀키로 복호화
 export const Decryption = async (public_key_hash, server_key_hash, encrypt_AES_Key, ciphertext) => {
-	let privateKey = null;
-	const rsa = new RSAKey();
+	try {
+		let privateKey = null;
+		const rsa = new RSAKey();
 
-	// 공개키 해시 기반으로 비밀키 추출
-	await new Promise((resolve, reject) => {
-		KeyPair_DB.transaction((tx) => {
-			tx.executeSql(
-				`SELECT encrypted_private_key FROM KeyTable WHERE public_key_hash = ?;`,
-				[public_key_hash],
-				(_, { rows }) => {
-					console.log('Select from KeyTable for Decryption: ', rows._array[0]);
-					privateKey = rows._array[0].encrypted_private_key;
-					console.log('privateKey', privateKey);
-					resolve();
-				},
-				(_, err) => {
-					console.log('Select KeyTable for Decryption ERROR: ', err);
-					reject(err);
-				}
-			);
+		await new Promise((resolve, reject) => {
+			KeyPair_DB.transaction((tx) => {
+				tx.executeSql(
+					`SELECT encrypted_private_key FROM KeyTable WHERE public_key_hash = ?;`,
+					[public_key_hash],
+					(_, { rows }) => {
+						try {
+							privateKey = rows._array[0].encrypted_private_key;
+							resolve();
+						} catch (e) {
+							reject(e); // 에러를 reject로 넘김
+						}
+					},
+					(_, err) => {
+						reject(err); // SQL 에러도 reject로 넘김
+					}
+				);
+			});
+		}).catch((error) => { // Promise에 대한 에러 핸들링
+			console.log("SQL or Promise Error: ", error);
+			throw error; // 에러를 상위로 전파
 		});
-	});
 
-	if (privateKey === null) {
-		console.log('privateKey', privateKey);
-		return null;
+		if (privateKey === null) {
+			console.log('privateKey is null');
+			return null;
+		}
+
+		rsa.setPrivateString(privateKey);
+		const AES_KEY = rsa.decrypt(encrypt_AES_Key);
+		var bytes = CryptoJS.AES.decrypt(ciphertext, AES_KEY);
+		var originalData = bytes.toString(CryptoJS.enc.Utf8);
+
+		return originalData;
+	} catch (e) {
+		console.log("Decryption ERROR: ", e);
+		return "Decryption ERROR: " + e;
 	}
-
-	rsa.setPrivateString(privateKey);
-	const AES_KEY = rsa.decrypt(encrypt_AES_Key);
-	console.log('AES_KEY', AES_KEY);
-	var bytes = CryptoJS.AES.decrypt(ciphertext, AES_KEY);
-	var originalData = bytes.toString(CryptoJS.enc.Utf8);
-	console.log('Decrypted_data', originalData);
-
-	return originalData;
 };
+
 
 export const Get_PublicKey = () => {
 	//미사용 Key Pair 추출

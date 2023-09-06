@@ -20,8 +20,8 @@ export default function ChatScreen() {
 	
 const fetchMessages = async () => {
     let rowArray = [];
-	setIsLoading(true);
     Chat_DB.transaction((tx) => {
+		setIsLoading(true);
         tx.executeSql(
             `SELECT * FROM ${RoomName} ORDER BY send_date DESC LIMIT 5`,
             [],
