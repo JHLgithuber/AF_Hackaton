@@ -26,6 +26,7 @@ const fetchMessages = async () => {
             `SELECT * FROM ${RoomName} ORDER BY send_date DESC LIMIT 5`,
             [],
             async (_, { rows }) => {  // 비동기로 처리
+				const KeyStore_PrivateKey=await CryptoModule.Get_KeyStore_PrivateKey()
                 for (let i = 0; i < rows.length; i++) {
                     const item = rows.item(i);
 
@@ -36,7 +37,8 @@ const fetchMessages = async () => {
                             item.peer_key_hash,
                             null,
                             item.encrypt_AES_Key,
-                            item.encrypt_data
+                            item.encrypt_data,
+							KeyStore_PrivateKey
                         );
                     } catch (err) {
                         console.error('Decryption failed:', err);
@@ -176,7 +178,8 @@ const fetchMessages = async () => {
 				newReceivingMessage.public_key_hash,
 				null,
 				newReceivingMessage.encrypted_AESKey,
-				newReceivingMessage.ciphertext
+				newReceivingMessage.ciphertext,
+				null
 			);
 
 			let updatedMessage = {

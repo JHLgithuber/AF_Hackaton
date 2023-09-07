@@ -20,24 +20,26 @@ const RSAKey = require('react-native-rsa');
 const bits = 512; //안전한건 2048 이상
 const exponent = '65537'; // must be a string. This is hex string. decimal = 65537
 
-async function Get_KeyStore_PrivateKey() {
+
+export async function Get_KeyStore_PrivateKey() {
     try {
-        let KeyStore_PrivateKey = await SecureStore.getItemAsync('KeyStore_PrivateKey');
+        let KeyStore_PrivateKey = await SecureStore.getItemAsync('KeyStore_PrivateKey',{authenticationPrompt:"ㅄㅋㅋㅋㅋㅋ"});
         if (KeyStore_PrivateKey) {
-            alert("🔐 Here's your value 🔐 \n" + result);
+			console.log('Get_KeyStore_PrivateKey', KeyStore_PrivateKey);
             return KeyStore_PrivateKey;
         } else {
-            alert('No values stored under that key.');
+            RSA_KeyPair_Maker();
         }
     } catch (e) {
         console.log('Get_KeyStore_PrivateKey', e);
     }
 }
 
-async function Get_KeyStore_PublicKey() {
+async function Get_KeyStore_PublicKey_func() {
     try {
         const KeyStore_PublicKey = await AsyncStorage.getItem('KeyStore_PublicKey');
-        if (value !== null) {
+        if (KeyStore_PublicKey !== null) {
+			console.log('Get_KeyStore_PublicKey', KeyStore_PublicKey);
             return KeyStore_PublicKey;
         }
     } catch (e) {
@@ -46,12 +48,13 @@ async function Get_KeyStore_PublicKey() {
 }
 
 async function Set_KeyStore_Key() {
-    const KeyStore_PublicKey_test = `{"n":"d0b831029f93540cb3cac6b581389723d029ffea4d004429ac226a942945460eb5432f60c098a9900d095fd480308073b1f4e90ba308847b5d51117534cfbe45","e":"65537"}`;
-    const KeyStore_PrivateKey_test = `{"n":"d0b831029f93540cb3cac6b581389723d029ffea4d004429ac226a942945460eb5432f60c098a9900d095fd480308073b1f4e90ba308847b5d51117534cfbe45","e":"65537","d":"2097aeb8eae6866ac7be305332feaf18a237bf5ae045b5fffff7909b4f4d8c2fab6076e617c3c0c3e9f10dff5883f92072a883e81191b9313b225cdc1b3d929b","p":"fd44875e9609d959da1c1d261fc484f5f144cdcd403d0a29b485d42c93b92967","q":"d2f8a14c9d105f7d22f64bebc05fcc0e0e7f6579623b6126aaaf519eb5c49373","dmp1":"de0f63f31b7e5e158168bdf9824466c02b7f482919bbcc6f33f0a5d8da522945","dmq1":"6d7df2681ce0071c4e833ec215aea8c3bd37357fcfb22c955d28f25719bf8f5d","coeff":"0cf999e7e1ddbcb767f4e553c9e3816f93cba0cc8d276749397ff57034be2b05"}`;
+	 const rsa = new RSAKey();
+            await rsa.generate(bits, exponent);
+	console.log("Set_KeyStore_Key",rsa.getPublicString(),rsa.getPrivateString())
 
     try {
-        await AsyncStorage.setItem('KeyStore_PublicKey', KeyStore_PublicKey_test);
-        await SecureStore.setItemAsync('KeyStore_PrivateKey', KeyStore_PrivateKey_test);
+        await AsyncStorage.setItem('KeyStore_PublicKey', rsa.getPublicString());
+        await SecureStore.setItemAsync('KeyStore_PrivateKey', rsa.getPrivateString(),{authenticationPrompt:"ㅄㅋㅋㅋㅋㅋ",requireAuthentication:true});
     } catch (e) {
         console.log('Set_KeyStore_Key', e);
     }
@@ -88,7 +91,7 @@ export function Remove_RSA_KeyTable() {
             (_, result) => {
                 console.log('Table Dropped:', result);
                 // 테이블 다시 생성
-                Make_RSA_KeyTable();
+                RSA_KeyPair_Maker()
             },
             (_, err) => {
                 console.log('Drop Table Error:', err);
@@ -143,9 +146,9 @@ export function RSA_KeyPair_Maker() {
             console.log('publicKeyHash:\t', publicKeyHash);
 
             const rsa_key = new RSAKey();
-            console.log(Get_KeyStore_PublicKey());
-            console.log(typeof Get_KeyStore_PublicKey());
-            rsa_key.setPublicString(Get_KeyStore_PublicKey());
+            console.log(await Get_KeyStore_PublicKey());
+            console.log(typeof await Get_KeyStore_PublicKey());
+            rsa_key.setPublicString(await Get_KeyStore_PublicKey());
             console.log('rsa_key.setPublicString');
             const randomBytes = Crypto.getRandomValues(new Uint8Array(32));
             const AESKey = base64.encode(String.fromCharCode.apply(null, randomBytes));
@@ -210,7 +213,7 @@ export function Encryption(publicKey, serverKey, data) {
 }
 
 //자신의 비밀키로 복호화
-export async function Decryption(public_key_hash, server_key_hash, encrypt_AES_Key, ciphertext) {
+export async function Decryption(public_key_hash, server_key_hash, encrypt_AES_Key, ciphertext, preReady_private_key) {
     try {
         let encrypted_privateKey = null;
         let encrypted_AES_key = null;
@@ -246,8 +249,13 @@ export async function Decryption(public_key_hash, server_key_hash, encrypt_AES_K
             console.log('encrypted_privateKey is null');
             return null;
         }
-
-        rsa_key.setPrivateString(Get_KeyStore_PrivateKey());
+		
+		if(preReady_private_key){
+			rsa_key.setPrivateString(preReady_private_key);
+		}else{
+			rsa_key.setPrivateString(await Get_KeyStore_PrivateKey());
+		}
+        
         console.log('encrypted_AES_key', encrypted_AES_key);
         const AES_Key = rsa_key.decrypt(encrypted_AES_key);
         console.log('AES_KEY=rsa_key.decrypt', AES_Key);
@@ -292,7 +300,6 @@ export function Get_PublicKey() {
                 },
                 async (_, err) => {
                     console.log('Select KeyTable for Get_PublicKey ERROR: ', err);
-
                     if (err.message && err.message.includes('no such table: KeyTable')) {
                         // 'KeyTable' 테이블이 없을 때 수행할 작업
                         await RSA_KeyPair_Maker();
