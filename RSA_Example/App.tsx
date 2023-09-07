@@ -22,7 +22,7 @@ console.log(End_MakingKey-Start_MakingKey);
 //const rsa = new RSAKey();
 for (i = 0; i < 3; i++) {
 	rsa.setPublicString(publicKey);
-	const originText = '계절이 지나가는 하늘에는 가을로 가득 차 있습니다.';
+	const originText = `{"d":"3dd6e6ea8a584f38b026c29bbe0f76e022bf89571f65c48ff6d97f011cfede45e9b60f310740344faa7ff3f46d2d4982b2bafb247a6cbd0aa6e51ee66340b03b8ac37d4bda9a2b5b93c441e24a7d2da157fce8128cb3a73c9852ffc4e869419e58cf38cf4a0bc6ac897c8903fa7faf0acb4e0a1c7db91225330faa0d99ac5637"}`;
 	const encrypted = rsa.encrypt(originText);
 	console.log(encrypted);
 	rsa.setPrivateString(privateKey);

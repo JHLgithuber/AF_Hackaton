@@ -15,11 +15,12 @@ import Toast from 'react-native-root-toast';
 
 const KeyPair_DB = SQLite.openDatabase('Encrypted_Chat_Data.db');
 const RSAKey = require('react-native-rsa');
-const bits = 1024; //안전한건 2048 이상
+const bits = 512;//안전한건 2048 이상
 const exponent = '65537'; // must be a string. This is hex string. decimal = 65537
 
-const KeyStore_PublicKey=`{"n":"901590b92b579cd3dba1f472ac17cb9f8a31eca260976788b157f88e4fd867373f10f3b285be6b35c6fede296f5bc801b6da9e418e30f0755d9f79e5cf106466524753b740c40605dd8be2157238f29a20cd8f83c1c6e9627cb52e2ccb5b9f550d867f75b8d2fd67694b066bd453d3be0c2b87659c6d701d3b8aa65235c4aa01","e":"65537"}`;
-const KeyStore_PrivateKey=`{"n":"901590b92b579cd3dba1f472ac17cb9f8a31eca260976788b157f88e4fd867373f10f3b285be6b35c6fede296f5bc801b6da9e418e30f0755d9f79e5cf106466524753b740c40605dd8be2157238f29a20cd8f83c1c6e9627cb52e2ccb5b9f550d867f75b8d2fd67694b066bd453d3be0c2b87659c6d701d3b8aa65235c4aa01","e":"65537","d":"3dd6e6ea8a584f38b026c29bbe0f76e022bf89571f65c48ff6d97f011cfede45e9b60f310740344faa7ff3f46d2d4982b2bafb247a6cbd0aa6e51ee66340b03b8ac37d4bda9a2b5b93c441e24a7d2da157fce8128cb3a73c9852ffc4e869419e58cf38cf4a0bc6ac897c8903fa7faf0acb4e0a1c7db91225330faa0d99ac5637","p":"cb24179f6f745a7f7f04a9c4ec374e7aee11f2a9d818098fa7053494d82d569eeae56c4e012e3b3d40d8d3e2e5d7c3d9dbb89a85ab2f2e43c9f3d8737ef7d06d","q":"b59380ea301fd87713074133b5e583ad4e18a4335351f8b6ef1c543651d8d740a0d7dbb4736dc223d501fce6653daf9e29ced7d62805192b618a950c20fdcb65","dmp1":"6173f20ec56b37301c28e1fd48b80f9f3d4a0e8791d76399f0369c9f8fb2c70a23be9a9a08a3090b3d4ae86f77dbc6129aade0ca19684e0cb6886188efc09293","dmq1":"3079f1c61ebe45468276e71ed9c5cb642bc348dfd43f3c427a436781ae35b3e73bda36be3cfe01a4f7268e5d53e1ef518137330a34aa80fba9e0b3a01e7b","coeff":"5c3baca5e432564ecbfbc57696fb42e9b0b240ff4d73690043d5fe613e6fb02bc219ec7cf134e8d5467e935804618b2187f8a94849a792b08777f9c3794a0939"}`;
+const KeyStore_PublicKey=`{"n":"d0b831029f93540cb3cac6b581389723d029ffea4d004429ac226a942945460eb5432f60c098a9900d095fd480308073b1f4e90ba308847b5d51117534cfbe45","e":"65537"}`;
+const KeyStore_PrivateKey=`{"n":"d0b831029f93540cb3cac6b581389723d029ffea4d004429ac226a942945460eb5432f60c098a9900d095fd480308073b1f4e90ba308847b5d51117534cfbe45","e":"65537","d":"2097aeb8eae6866ac7be305332feaf18a237bf5ae045b5fffff7909b4f4d8c2fab6076e617c3c0c3e9f10dff5883f92072a883e81191b9313b225cdc1b3d929b","p":"fd44875e9609d959da1c1d261fc484f5f144cdcd403d0a29b485d42c93b92967","q":"d2f8a14c9d105f7d22f64bebc05fcc0e0e7f6579623b6126aaaf519eb5c49373","dmp1":"de0f63f31b7e5e158168bdf9824466c02b7f482919bbcc6f33f0a5d8da522945","dmq1":"6d7df2681ce0071c4e833ec215aea8c3bd37357fcfb22c955d28f25719bf8f5d","coeff":"0cf999e7e1ddbcb767f4e553c9e3816f93cba0cc8d276749397ff57034be2b05"}`;
+        
 
 function Make_RSA_KeyTable() {
 	KeyPair_DB.transaction((tx) => {
@@ -209,7 +210,7 @@ export async function Decryption(public_key_hash, server_key_hash, encrypt_AES_K
 		const AES_Key=rsa_key.decrypt(encrypted_AES_key);
 		console.log("AES_KEY=rsa_key.decrypt",AES_Key);
 		var privateKey_bytes = CryptoJS.AES.decrypt(encrypted_privateKey, AES_Key);
-		var privateKey = privateKey_.toString(CryptoJS.enc.Utf8);
+		var privateKey = privateKey_bytes.toString(CryptoJS.enc.Utf8);
 		console.log("privateKey",privateKey);
 		
 		
