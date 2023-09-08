@@ -5,12 +5,13 @@ import { GiftedChat, IMessage } from 'react-native-gifted-chat';
 import * as SQLite from 'expo-sqlite';
 import * as CryptoModule from './HybridCryptoModule';
 import * as Crypto from 'expo-crypto';
-import { Messenger_IO,UnHandled_Receiving_Message } from './ConnectionModule';
+import { Messenger_IO, UnHandled_Receiving_Message } from './ConnectionModule';
+import useHandleUnreadMessages from './useHandleUnreadMessages';
 
 // 채팅 저장을 위한 SQLite 데이터베이스를 열기
 const Chat_DB = SQLite.openDatabase('Encrypted_Chat_Data.db');
-const ChatIO = new Messenger_IO('http://43.201.16.58:58641');
-
+const ChatIO = new Messenger_IO('http://3.36.111.111:54656');
+export var existed_UnHandled_Receiving_Message = 0;
 
 export default function ChatScreen() {
     const RoomName = 'test_room';
@@ -200,7 +201,7 @@ export default function ChatScreen() {
                 `INSERT INTO ${RoomName} (UUID, send_date, sender, sender_name, receiver, peer_key_hash, server_key_hash, encrypt_AES_Key, encrypt_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
                     Crypto.randomUUID(),
-                    newReceivingMessage.createdAt.toISOString(),
+                    newReceivingMessage.createdAt,
                     newReceivingMessage.user._id,
                     newReceivingMessage.user.name,
                     null, //수신자
@@ -241,14 +242,21 @@ export default function ChatScreen() {
 
         console.log('newReceivingMessage', newReceivingMessage);
     };
-	
-	useEffect(() => {
-		while(UnHandled_Receiving_Message.length){
-			onReceive(UnHandled_Receiving_Message[0])
-			UnHandled_Receiving_Message.shift();
-		}
-        
-    }, [UnHandled_Receiving_Message]);
+
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            while (UnHandled_Receiving_Message.length) {
+                onReceive(UnHandled_Receiving_Message[0]);
+                UnHandled_Receiving_Message.shift();
+            }
+        }, 1000); // 1초마다 반복
+
+        // 컴포넌트 언마운트시 인터벌 제거
+        return () => {
+            clearInterval(intervalId);
+        };
+    }, []);
+
 
     useEffect(() => {
         Make_new_DB();
