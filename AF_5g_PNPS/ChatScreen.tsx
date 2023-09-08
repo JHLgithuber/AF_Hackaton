@@ -5,11 +5,12 @@ import { GiftedChat, IMessage } from 'react-native-gifted-chat';
 import * as SQLite from 'expo-sqlite';
 import * as CryptoModule from './HybridCryptoModule';
 import * as Crypto from 'expo-crypto';
-import { Messenger_IO } from './ConnectionModule';
+import { Messenger_IO,UnHandled_Receiving_Message } from './ConnectionModule';
 
 // 채팅 저장을 위한 SQLite 데이터베이스를 열기
 const Chat_DB = SQLite.openDatabase('Encrypted_Chat_Data.db');
 const ChatIO = new Messenger_IO('http://43.201.16.58:58641');
+
 
 export default function ChatScreen() {
     const RoomName = 'test_room';
@@ -161,7 +162,7 @@ export default function ChatScreen() {
                     name: UserName,
                 },
             };
-			await ChatIO.sendMessage(SendingMessage);
+            await ChatIO.sendMessage(SendingMessage);
 
             await Chat_DB.transaction((tx) => {
                 tx.executeSql(
@@ -240,6 +241,14 @@ export default function ChatScreen() {
 
         console.log('newReceivingMessage', newReceivingMessage);
     };
+	
+	useEffect(() => {
+		while(UnHandled_Receiving_Message.length){
+			onReceive(UnHandled_Receiving_Message[0])
+			UnHandled_Receiving_Message.shift();
+		}
+        
+    }, [UnHandled_Receiving_Message]);
 
     useEffect(() => {
         Make_new_DB();
@@ -247,7 +256,7 @@ export default function ChatScreen() {
     }, []);
 
     //수신이 잘 되는지 테스트, 전송하듯이 구현
-	/*
+    /*
     useEffect(() => {
         console.log('수신테스트: ', UserID);
         let messageText = new Date().toString() + '에 자동으로 받은 메시지입니다.';

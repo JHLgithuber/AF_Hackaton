@@ -24,9 +24,10 @@ def handle_message(message):
         'JSON_DATA': message
     }
     logs.append(log_entry)  # 로그 저장
-    print(f"Log: {log_entry}")
+    #print(f"Log: {log_entry}")
 
-    socketio.emit('send_message', message)
+    socketio.emit('receive_message', message)
+    print(f"Sendied message: {message}")
     #socketio.emit('update_logs', log_entry)  # 모든 클라이언트에게 로그 업데이트 이벤트 발송
 
 if __name__ == '__main__':
