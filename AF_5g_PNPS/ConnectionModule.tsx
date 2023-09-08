@@ -10,7 +10,7 @@ export class Messenger_IO {
 
         this.socket.on('connect', () => {
 			console.log(this.socket);
-            alert('Messenger_IO 연결');;
+            alert('Messenger_IO 연결');
         });
 
         this.socket.on('receive_message', (text) => {
