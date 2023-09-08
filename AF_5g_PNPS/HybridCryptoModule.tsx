@@ -21,9 +21,9 @@ const bits = 512; //안전한건 2048 이상
 const exponent = '65537'; // must be a string. This is hex string. decimal = 65537
 
 
-export async function Get_KeyStore_PrivateKey() {
+export async function Get_KeyStore_PrivateKey(authenticationPrompt) {
     try {
-        let KeyStore_PrivateKey = await SecureStore.getItemAsync('KeyStore_PrivateKey',{authenticationPrompt:"ㅄㅋㅋㅋㅋㅋ"});
+        let KeyStore_PrivateKey = await SecureStore.getItemAsync('KeyStore_PrivateKey',{authenticationPrompt:authenticationPrompt});
         if (KeyStore_PrivateKey) {
 			console.log('Get_KeyStore_PrivateKey', KeyStore_PrivateKey);
             return KeyStore_PrivateKey;
@@ -35,7 +35,7 @@ export async function Get_KeyStore_PrivateKey() {
     }
 }
 
-async function Get_KeyStore_PublicKey_func() {
+async function Get_KeyStore_PublicKey() {
     try {
         const KeyStore_PublicKey = await AsyncStorage.getItem('KeyStore_PublicKey');
         if (KeyStore_PublicKey !== null) {
@@ -253,7 +253,7 @@ export async function Decryption(public_key_hash, server_key_hash, encrypt_AES_K
 		if(preReady_private_key){
 			rsa_key.setPrivateString(preReady_private_key);
 		}else{
-			rsa_key.setPrivateString(await Get_KeyStore_PrivateKey());
+			rsa_key.setPrivateString(await Get_KeyStore_PrivateKey("For Decryption"));
 		}
         
         console.log('encrypted_AES_key', encrypted_AES_key);

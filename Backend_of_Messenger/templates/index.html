@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Message Logs</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script type="text/javascript">
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        socket.on('update_logs', function(log_entry) {
+            var logsElement = document.getElementById('logs');
+            var newLogEntry = document.createElement('div');
+            newLogEntry.innerHTML = `From: ${log_entry.from}, Message: ${JSON.stringify(log_entry.message)}`;
+            logsElement.appendChild(newLogEntry);
+        });
+    </script>
+</head>
+<body>
+
+<h1>Message Logs</h1>
+<div id="logs">
+    <!-- 로그가 여기에 표시됩니다. -->
+</div>
+
+</body>
+</html>
