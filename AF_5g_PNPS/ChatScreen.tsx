@@ -5,9 +5,11 @@ import { GiftedChat, IMessage } from 'react-native-gifted-chat';
 import * as SQLite from 'expo-sqlite';
 import * as CryptoModule from './HybridCryptoModule';
 import * as Crypto from 'expo-crypto';
+import { Messenger_IO } from './ConnectionModule';
 
 // 채팅 저장을 위한 SQLite 데이터베이스를 열기
 const Chat_DB = SQLite.openDatabase('Encrypted_Chat_Data.db');
+const ChatIO = new Messenger_IO('http://43.201.16.58:58641');
 
 export default function ChatScreen() {
     const RoomName = 'test_room';
@@ -149,19 +151,31 @@ export default function ChatScreen() {
                 message.text
             );
 
+            const SendingMessage = {
+                ciphertext: encrypted.ciphertext,
+                encrypted_AESKey: encrypted.encrypted_AESKey,
+                public_key_hash: public_key_object.public_key_hash,
+                createdAt: message.createdAt.toISOString(),
+                user: {
+                    _id: UserID.toString(),
+                    name: UserName,
+                },
+            };
+			await ChatIO.sendMessage(SendingMessage);
+
             await Chat_DB.transaction((tx) => {
                 tx.executeSql(
                     `INSERT INTO ${RoomName} (UUID, send_date, sender,sender_name, receiver, peer_key_hash, server_key_hash, encrypt_AES_Key, encrypt_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                     [
                         Crypto.randomUUID(),
-                        message.createdAt.toISOString(),
-                        UserID.toString(),
-                        UserName,
+                        SendingMessage.createdAt,
+                        SendingMessage.user._id,
+                        SendingMessage.user.name,
                         null, //수신자
-                        public_key_object.public_key_hash,
+                        SendingMessage.public_key_hash,
                         null, //서버키 해시
-                        encrypted.encrypted_AESKey,
-                        encrypted.ciphertext,
+                        SendingMessage.encrypted_AESKey,
+                        SendingMessage.ciphertext,
                     ],
                     (_, result) => {
                         console.log('Insert Success:', result);
@@ -172,6 +186,7 @@ export default function ChatScreen() {
                     }
                 );
             });
+
             await setMessages((prevMessages) => GiftedChat.append(prevMessages, newMessages));
         });
     };
@@ -232,6 +247,7 @@ export default function ChatScreen() {
     }, []);
 
     //수신이 잘 되는지 테스트, 전송하듯이 구현
+	/*
     useEffect(() => {
         console.log('수신테스트: ', UserID);
         let messageText = new Date().toString() + '에 자동으로 받은 메시지입니다.';
@@ -266,6 +282,7 @@ export default function ChatScreen() {
             clearTimeout(timer);
         };
     }, [messages]);
+	*/
 
     return (
         <View style={{ flex: 1 }}>

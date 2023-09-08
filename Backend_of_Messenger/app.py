@@ -21,13 +21,13 @@ def handle_message(message):
     user_id = message.get('user').get('_id')
     log_entry = {
         'from': user_id,
-        'message': message
+        'JSON_DATA': message
     }
     logs.append(log_entry)  # 로그 저장
     print(f"Log: {log_entry}")
 
-    socketio.emit(f'receive_message_{user_id}', message)
-    socketio.emit('update_logs', log_entry)  # 모든 클라이언트에게 로그 업데이트 이벤트 발송
+    socketio.emit('send_message', message)
+    #socketio.emit('update_logs', log_entry)  # 모든 클라이언트에게 로그 업데이트 이벤트 발송
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000,debug=True)
