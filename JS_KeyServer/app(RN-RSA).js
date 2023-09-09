@@ -4,7 +4,7 @@ const crypto = require('crypto');
 
 //const NodeRSA = require('node-rsa');
 const RSAKey = require('react-native-rsa');
-const bits = 2048; //안전한건 2048 이상, 이거 작으면 암호화 오류 발생
+const bits = 2048; //안전한건 2048 이상, 이거 작으면 암호화 오류 발생!!
 const exponent = '65537';
 const app = express();
 app.use(bodyParser.json());
