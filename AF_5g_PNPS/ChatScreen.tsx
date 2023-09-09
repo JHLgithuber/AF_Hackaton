@@ -5,12 +5,12 @@ import { GiftedChat, IMessage } from 'react-native-gifted-chat';
 import * as SQLite from 'expo-sqlite';
 import * as CryptoModule from './HybridCryptoModule';
 import * as Crypto from 'expo-crypto';
-import { Messenger_IO, UnHandled_Receiving_Message } from './ConnectionModule';
+import { Messenger_IO, UnHandled_Receiving_Message, get_server_public_key, get_server_private_key } from './ConnectionModule';
 import useHandleUnreadMessages from './useHandleUnreadMessages';
 
 // 채팅 저장을 위한 SQLite 데이터베이스를 열기
 const Chat_DB = SQLite.openDatabase('Encrypted_Chat_Data.db');
-const ChatIO = new Messenger_IO('http://3.36.111.111:54656');
+const ChatIO = new Messenger_IO('http://43.202.4.38:50916');
 export var existed_UnHandled_Receiving_Message = 0;
 
 export default function ChatScreen() {
@@ -147,16 +147,21 @@ export default function ChatScreen() {
             // 기존의 메시지 삽입 로직
             console.log('SendingMessage', message);
             let public_key_object = await CryptoModule.Get_PublicKey();
+			let public_server_key_object = await get_server_public_key();
+			console.log("public_server_key",public_server_key_object.public_key);
             let encrypted = await CryptoModule.Encryption(
                 public_key_object.public_key,
-                null,
+                public_server_key_object.public_key,
                 message.text
             );
+			
+			
 
             const SendingMessage = {
                 ciphertext: encrypted.ciphertext,
                 encrypted_AESKey: encrypted.encrypted_AESKey,
                 public_key_hash: public_key_object.public_key_hash,
+				server_key_hash: public_server_key_object.hash,
                 createdAt: message.createdAt.toISOString(),
                 user: {
                     _id: UserID.toString(),
@@ -175,7 +180,7 @@ export default function ChatScreen() {
                         SendingMessage.user.name,
                         null, //수신자
                         SendingMessage.public_key_hash,
-                        null, //서버키 해시
+                        SendingMessage.server_key_hash, //서버키 해시
                         SendingMessage.encrypted_AESKey,
                         SendingMessage.ciphertext,
                     ],

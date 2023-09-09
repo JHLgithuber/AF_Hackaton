@@ -188,7 +188,11 @@ export function RSA_KeyPair_Maker() {
 export function Encryption(publicKey, serverKey, data) {
     try {
         const rsa = new RSAKey();
+		const rsa_server = new RSAKey();
+		console.log("publicKey",publicKey);
         rsa.setPublicString(publicKey);
+		console.log("serverKey",serverKey);
+		rsa_server.setPublicString(serverKey);
 
         // AES 암호화 키 생성
         const randomBytes = Crypto.getRandomValues(new Uint8Array(32));
@@ -202,10 +206,13 @@ export function Encryption(publicKey, serverKey, data) {
 
         const ciphertext = CryptoJS.AES.encrypt(data, AESKey).toString();
         console.log('ciphertext', ciphertext);
+		
         const encrypted_AESKey = rsa.encrypt(AESKey);
         console.log('encrypted_AESKey', encrypted_AESKey);
+		const server_encrypted_AESKey = rsa_server.encrypt(AESKey);
+        console.log('server_encrypted_AESKey', server_encrypted_AESKey);
 
-        return { ciphertext, encrypted_AESKey };
+        return { ciphertext, server_encrypted_AESKey };
     } catch (error) {
         console.error('Encryption failed:', error);
         return null;

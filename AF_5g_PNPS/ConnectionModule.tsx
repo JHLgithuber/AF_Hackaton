@@ -9,7 +9,7 @@ export class Messenger_IO {
         console.log('Messenger_IO constructed', serverUrl);
 
         this.socket.on('connect', () => {
-			console.log(this.socket);
+            console.log(this.socket);
             alert('Messenger_IO 연결');
         });
 
@@ -23,5 +23,33 @@ export class Messenger_IO {
     sendMessage(message) {
         console.log('Messenger_IO message', message);
         this.socket.emit('send_message', message);
+    }
+}
+
+export async function get_server_public_key() {
+    try {
+        const response = await fetch('http://keyserver.run.goorm.site/generate_key');
+        const data = await response.json();
+        console.log(`Server Public Key: ${data.public_key}`);
+		const server_public_key=JSON.stringify(data.public_key).replace(/\\/g, '').replace(/\s+/g, '').slice(1, -1);
+        console.log(`Server Hash: ${data.hash}`);
+		const server_hash=JSON.stringify(data.hash).replace(/\\/g, '').replace(/\s+/g, '').slice(1, -1);
+		
+        return {public_key:server_public_key,hash:server_hash};
+    } catch (error) {
+        console.error('Error:', error);
+        return null;
+    }
+}
+
+export async function get_server_private_key(hash_value) {
+    try {
+        const response = await fetch(`http://keyserver.run.goorm.site/get_key/${hash_value}`);
+        const data = await response.json();
+        console.log(`Private Key: ${data.private_key}`);
+        return data;
+    } catch (error) {
+        console.error('Error:', error);
+        return null;
     }
 }
