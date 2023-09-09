@@ -14,6 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import base64 from 'base-64';
 import CryptoJS from 'crypto-js';
 import Toast from 'react-native-root-toast';
+import {get_server_private_key} from './ConnectionModule';
 
 const KeyPair_DB = SQLite.openDatabase('Encrypted_Chat_Data.db');
 const RSAKey = require('react-native-rsa');
@@ -209,7 +210,7 @@ export function Encryption(publicKey, serverKey, data) {
 		
         const encrypted_AESKey = rsa.encrypt(AESKey);
         console.log('encrypted_AESKey', encrypted_AESKey);
-		const server_encrypted_AESKey = rsa_server.encrypt(AESKey);
+		const server_encrypted_AESKey = rsa_server.encrypt(encrypted_AESKey);
         console.log('server_encrypted_AESKey', server_encrypted_AESKey);
 
         return { ciphertext, server_encrypted_AESKey };
@@ -223,9 +224,9 @@ export function Encryption(publicKey, serverKey, data) {
 export async function Decryption(public_key_hash, server_key_hash, encrypt_AES_Key, ciphertext, preReady_private_key) {
     try {
         let encrypted_privateKey = null;
-        let encrypted_AES_key = null;
-        const rsa = new RSAKey();
-        const rsa_key = new RSAKey();
+        let encrypted_AES_key_for_key = null;
+        		
+		console.log('encrypted_AES_key is exist?', encrypt_AES_Key);
 
         await new Promise((resolve, reject) => {
             KeyPair_DB.transaction((tx) => {
@@ -235,7 +236,7 @@ export async function Decryption(public_key_hash, server_key_hash, encrypt_AES_K
                     (_, { rows }) => {
                         try {
                             encrypted_privateKey = rows._array[0].encrypted_private_key;
-                            encrypted_AES_key = rows._array[0].encrypted_AES_key;
+                            encrypted_AES_key_for_key = rows._array[0].encrypted_AES_key;
                             resolve();
                         } catch (e) {
                             reject(e); // 에러를 reject로 넘김
@@ -257,23 +258,39 @@ export async function Decryption(public_key_hash, server_key_hash, encrypt_AES_K
             return null;
         }
 		
+		
+		const rsa_key = new RSAKey();
 		if(preReady_private_key){
 			rsa_key.setPrivateString(preReady_private_key);
 		}else{
 			rsa_key.setPrivateString(await Get_KeyStore_PrivateKey("For Decryption"));
 		}
         
-        console.log('encrypted_AES_key', encrypted_AES_key);
-        const AES_Key = rsa_key.decrypt(encrypted_AES_key);
+		
+		//서버에서 비밀키를 가져와서 AES키를 1차 복호화
+		const rsa_server = new RSAKey();
+		console.log(await get_server_private_key(server_key_hash));
+		rsa_server.setPrivateString(await get_server_private_key(server_key_hash));
+		console.log("encrypt_AES_Key",encrypt_AES_Key);
+		const server_decrypt_AES_key=await rsa_server.decrypt(encrypt_AES_Key);
+		console.log("server_decrypt_AES_key",server_decrypt_AES_key);
+		
+		//암호화되어있는 로컬 비밀키를 복호화
+        const AES_Key = await rsa_key.decrypt(encrypted_AES_key_for_key);
         console.log('AES_KEY=rsa_key.decrypt', AES_Key);
-        var privateKey_bytes = CryptoJS.AES.decrypt(encrypted_privateKey, AES_Key);
-        var privateKey = privateKey_bytes.toString(CryptoJS.enc.Utf8);
+        var privateKey_bytes = await CryptoJS.AES.decrypt(encrypted_privateKey, AES_Key);
+        var privateKey = await privateKey_bytes.toString(CryptoJS.enc.Utf8);
         console.log('privateKey', privateKey);
-
-        rsa.setPrivateString(privateKey);
-        const Data_AES_Key = rsa.decrypt(encrypt_AES_Key);
-        var bytes = CryptoJS.AES.decrypt(ciphertext, Data_AES_Key);
-        var originalData = bytes.toString(CryptoJS.enc.Utf8);
+		
+		//복호화된 로컬 비밀키로 AES키를 최종 복호화
+		const rsa = new RSAKey();
+        await rsa.setPrivateString(privateKey);
+        const Data_AES_Key = await rsa.decrypt(server_decrypt_AES_key);
+		console.log("Data_AES_Key",Data_AES_Key);//이게 왜 null???
+		
+		//복호화된 AES키로 데이터 복호화
+        var bytes = await CryptoJS.AES.decrypt(ciphertext, Data_AES_Key);
+        var originalData = await bytes.toString(CryptoJS.enc.Utf8);
         console.log('originalData', originalData);
 
         return originalData;

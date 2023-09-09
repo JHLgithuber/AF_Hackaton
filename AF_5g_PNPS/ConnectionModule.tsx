@@ -46,8 +46,10 @@ export async function get_server_private_key(hash_value) {
     try {
         const response = await fetch(`http://keyserver.run.goorm.site/get_key/${hash_value}`);
         const data = await response.json();
-        console.log(`Private Key: ${data.private_key}`);
-        return data;
+		const private_key=JSON.stringify(data.private_key).replace(/\\/g, '').replace(/\s+/g, '').slice(2, -2);
+		console.log('Private Key:',private_key);
+		
+        return private_key;
     } catch (error) {
         console.error('Error:', error);
         return null;

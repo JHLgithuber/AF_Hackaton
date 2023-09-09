@@ -159,7 +159,7 @@ export default function ChatScreen() {
 
             const SendingMessage = {
                 ciphertext: encrypted.ciphertext,
-                encrypted_AESKey: encrypted.encrypted_AESKey,
+                encrypted_AESKey: encrypted.server_encrypted_AESKey,
                 public_key_hash: public_key_object.public_key_hash,
 				server_key_hash: public_server_key_object.hash,
                 createdAt: message.createdAt.toISOString(),
@@ -211,7 +211,7 @@ export default function ChatScreen() {
                     newReceivingMessage.user.name,
                     null, //수신자
                     newReceivingMessage.public_key_hash, //사용자 키 해시
-                    null, //서버 키 해시
+                    newReceivingMessage.server_key_hash, //서버 키 해시
                     newReceivingMessage.encrypted_AESKey, //암호화된 AES Key
                     newReceivingMessage.ciphertext,
                 ],
@@ -228,7 +228,7 @@ export default function ChatScreen() {
         try {
             const Decryptied_Data = await CryptoModule.Decryption(
                 newReceivingMessage.public_key_hash,
-                null,
+                newReceivingMessage.server_key_hash,
                 newReceivingMessage.encrypted_AESKey,
                 newReceivingMessage.ciphertext,
                 null
