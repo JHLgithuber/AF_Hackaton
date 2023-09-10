@@ -1,4 +1,5 @@
-.env
 ExpoWebsocketExample/
 FlaskWS_for_Test/
 RSA_Example/
+
+.env
