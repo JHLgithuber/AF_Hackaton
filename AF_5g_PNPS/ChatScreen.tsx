@@ -10,7 +10,7 @@ import useHandleUnreadMessages from './useHandleUnreadMessages';
 
 // 채팅 저장을 위한 SQLite 데이터베이스를 열기
 const Chat_DB = SQLite.openDatabase('Encrypted_Chat_Data.db');
-const ChatIO = new Messenger_IO('http://54.180.198.142:53119');
+const ChatIO = new Messenger_IO('http://3.39.195.30:55578');
 export var existed_UnHandled_Receiving_Message = 0;
 
 export default function ChatScreen() {
@@ -55,7 +55,7 @@ export default function ChatScreen() {
                                 try {
                                     Decryptied_Data = await CryptoModule.Decryption(
                                         item.peer_key_hash,
-                                        null,
+                                        item.server_key_hash,
                                         item.encrypt_AES_Key,
                                         item.encrypt_data,
                                         KeyStore_PrivateKey
