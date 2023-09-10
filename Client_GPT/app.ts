@@ -58,7 +58,7 @@ const onSend = async (newMessages = []) => {
         //CryptoModule.Encryption();//메시지 암호화
         // 기존의 메시지 삽입 로직
         console.log('SendingMessage', message);
-        let public_key_object = await CryptoModule.Get_PublicKey();
+        let public_key_object = await ChatIO.request_public_key("Give me your KEY!!!");
         let public_server_key_object = await get_server_public_key();
         console.log('public_server_key', public_server_key_object.public_key);
         let encrypted = await CryptoModule.Encryption(
@@ -168,8 +168,8 @@ async function AI_request() {
 
 async function main() {
 	onSend([{text:"hello"}])
-    await AI_request();
-    console.log(AI_messages);
+    //await AI_request();
+    //console.log(AI_messages);
 }
 
 main().catch(console.error); // 에러가 발생할 경우 출력

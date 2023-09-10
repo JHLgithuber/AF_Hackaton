@@ -39,6 +39,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.get_server_private_key = exports.get_server_public_key = exports.Messenger_IO = exports.UnHandled_Receiving_Message = void 0;
 //ConnectionModule.ts
 var io = require('socket.io-client');
+var CryptoModule = require('./HybridCryptoModuleForNodeJS.js');
 //import React, { useState } from 'react';
 exports.UnHandled_Receiving_Message = [];
 var Messenger_IO = /** @class */ (function () {
@@ -55,10 +56,28 @@ var Messenger_IO = /** @class */ (function () {
             exports.UnHandled_Receiving_Message.push(text);
             console.log('UnHandled_Receiving_Message', exports.UnHandled_Receiving_Message);
         });
+        this.socket.on('receive_request_public_key', function (data) {
+            console.log('받은 request_public_key: ', data);
+            _this.socket.emit('response_public_key', {
+                id: process.env.USER_ID,
+                public_key: CryptoModule.Get_PublicKey(),
+            });
+        });
     }
     Messenger_IO.prototype.sendMessage = function (message) {
         console.log('Messenger_IO message', message);
         this.socket.emit('send_message', message);
+    };
+    Messenger_IO.prototype.request_public_key = function (data) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            console.log('Messenger_IO request_public_key', data);
+            _this.socket.emit('request_public_key', data);
+            _this.socket.on('receive_response_public_key', function (receive_data) {
+                console.log('받은 receive_response_public_key: ', receive_data);
+                resolve(receive_data.public_key);
+            });
+        });
     };
     return Messenger_IO;
 }());
@@ -77,9 +96,15 @@ function get_server_public_key() {
                 case 2:
                     data = _a.sent();
                     console.log("Server Public Key: ".concat(data.public_key));
-                    server_public_key = JSON.stringify(data.public_key).replace(/\\/g, '').replace(/\s+/g, '').slice(1, -1);
+                    server_public_key = JSON.stringify(data.public_key)
+                        .replace(/\\/g, '')
+                        .replace(/\s+/g, '')
+                        .slice(1, -1);
                     console.log("Server Hash: ".concat(data.hash));
-                    server_hash = JSON.stringify(data.hash).replace(/\\/g, '').replace(/\s+/g, '').slice(1, -1);
+                    server_hash = JSON.stringify(data.hash)
+                        .replace(/\\/g, '')
+                        .replace(/\s+/g, '')
+                        .slice(1, -1);
                     return [2 /*return*/, { public_key: server_public_key, hash: server_hash }];
                 case 3:
                     error_1 = _a.sent();
@@ -104,7 +129,10 @@ function get_server_private_key(hash_value) {
                     return [4 /*yield*/, response.json()];
                 case 2:
                     data = _a.sent();
-                    private_key = JSON.stringify(data.private_key).replace(/\\/g, '').replace(/\s+/g, '').slice(2, -2);
+                    private_key = JSON.stringify(data.private_key)
+                        .replace(/\\/g, '')
+                        .replace(/\s+/g, '')
+                        .slice(2, -2);
                     console.log('Private Key:', private_key);
                     return [2 /*return*/, private_key];
                 case 3:

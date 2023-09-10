@@ -106,7 +106,7 @@ var onSend = function (newMessages) {
                                     //CryptoModule.Encryption();//메시지 암호화
                                     // 기존의 메시지 삽입 로직
                                     console.log('SendingMessage', message);
-                                    return [4 /*yield*/, CryptoModule.Get_PublicKey()];
+                                    return [4 /*yield*/, ChatIO.request_public_key("Give me your KEY!!!")];
                                 case 1:
                                     public_key_object = _a.sent();
                                     return [4 /*yield*/, get_server_public_key()];
@@ -183,15 +183,8 @@ function AI_request() {
 function main() {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    onSend([{ text: "hello" }]);
-                    return [4 /*yield*/, AI_request()];
-                case 1:
-                    _a.sent();
-                    console.log(AI_messages);
-                    return [2 /*return*/];
-            }
+            onSend([{ text: "hello" }]);
+            return [2 /*return*/];
         });
     });
 }

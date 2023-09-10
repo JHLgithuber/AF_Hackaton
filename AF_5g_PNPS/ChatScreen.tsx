@@ -17,8 +17,8 @@ export var existed_UnHandled_Receiving_Message = 0;
 
 export default function ChatScreen() {
     const RoomName = 'test_room';
-    const UserID = 100;
-    const UserName = '이진형';
+    const UserID = process.env.USER_ID;
+    const UserName = process.env.USER_NAME;
 
     const [messages, setMessages] = useState([]);
     const [isLoading, setIsLoading] = useState(false); // ActivityIndicator 상태 관리를 위한 상태 변수
@@ -148,7 +148,7 @@ export default function ChatScreen() {
             //CryptoModule.Encryption();//메시지 암호화
             // 기존의 메시지 삽입 로직
             console.log('SendingMessage', message);
-            let public_key_object = await CryptoModule.Get_PublicKey();
+            let public_key_object = await ChatIO.request_public_key("Give me your KEY!!!");
 			let public_server_key_object = await get_server_public_key();
 			console.log("public_server_key",public_server_key_object.public_key);
             let encrypted = await CryptoModule.Encryption(

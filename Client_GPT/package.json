@@ -6,6 +6,7 @@
     "level": "^8.0.0",
     "openai": "^4.6.0",
     "react-native-rsa": "^0.0.3",
+    "react-native-rsa-expo": "^0.0.4",
     "socket.io-client": "^4.7.2",
     "sqlite3": "^5.1.6",
     "uuid": "^9.0.0"
