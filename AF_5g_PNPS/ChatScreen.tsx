@@ -8,9 +8,11 @@ import * as Crypto from 'expo-crypto';
 import { Messenger_IO, UnHandled_Receiving_Message, get_server_public_key, get_server_private_key } from './ConnectionModule';
 import useHandleUnreadMessages from './useHandleUnreadMessages';
 
+
 // 채팅 저장을 위한 SQLite 데이터베이스를 열기
 const Chat_DB = SQLite.openDatabase('Encrypted_Chat_Data.db');
-const ChatIO = new Messenger_IO('http://3.39.195.30:55578');
+const ChatIO = new Messenger_IO(process.env.MESSENGER_IO_URL);
+console.log("process.env.MESSENGER_IO_URL",process.env.MESSENGER_IO_URL);
 export var existed_UnHandled_Receiving_Message = 0;
 
 export default function ChatScreen() {
