@@ -1,6 +1,7 @@
 //ConnectionModule.tsx
 import io from 'socket.io-client';
 import React, { useState } from 'react';
+import * as CryptoModule from './HybridCryptoModule';
 
 export var UnHandled_Receiving_Message = [];
 
@@ -18,6 +19,12 @@ export class Messenger_IO {
             console.log('받은 메시지: ', text);
             UnHandled_Receiving_Message.push(text);
             console.log('UnHandled_Receiving_Message', UnHandled_Receiving_Message);
+        });
+		
+		this.socket.on('receive_request_public_key', (text) => {
+            console.log('받은 request_public_key: ', text);
+            this.socket.emit('request_public_key',{id:100,public_key:CryptoModule.Get_PublicKey()})
+			
         });
     }
 

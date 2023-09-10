@@ -35,9 +35,38 @@ def handle_message(message):
 
     socketio.emit('receive_message', message)
     print(f"Sendied message: {message}")
-    """
-    socketio.emit('update_logs', log_entry)  # 모든 클라이언트에게 로그 업데이트 이벤트 발송
-    """
+
+
+@socketio.on('request_public_key')
+def handle_request_public_key(data):
+    print(f"Received request_public_key: {data}")
+
+    user_id = data.get('user').get('_id')
+    log_entry = {
+        'from': user_id,
+        'JSON_DATA': public_key
+    }
+
+    logs.append(log_entry)  # 로그 저장
+
+    socketio.emit('receive_request_public_key', data)
+    print(f"Sendied request_public_key: {data}")
+
+    
+@socketio.on('response_public_key')
+def handle_public_key(public_key):
+    print(f"Received response_public_key: {public_key}")
+
+    user_id = public_key.get('user').get('_id')
+    log_entry = {
+        'from': user_id,
+        'JSON_DATA': public_key
+    }
+
+    logs.append(log_entry)  # 로그 저장
+
+    socketio.emit('receive_response_public_key', public_key)
+    print(f"Sendied response_public_key: {public_key}")
 
 
 if __name__ == '__main__':
