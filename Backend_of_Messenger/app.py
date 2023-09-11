@@ -22,7 +22,6 @@ def handle_message(message):
     print(f"Received message: {message}")
 
     user_id = message.get('user').get('_id')
-    message['user']['_id'] = 101
     log_entry = {
         'from': user_id,
         'JSON_DATA': message

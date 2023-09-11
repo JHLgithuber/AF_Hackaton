@@ -57,7 +57,7 @@ async function Set_KeyStore_Key() {
     try {
         await AsyncStorage.setItem('KeyStore_PublicKey', rsa.getPublicString());
         await SecureStore.setItemAsync('KeyStore_PrivateKey', rsa.getPrivateString(), {
-            authenticationPrompt: 'ㅄㅋㅋㅋㅋㅋ',
+            authenticationPrompt: 'KeyStore_Key키를 저장합니다',
             requireAuthentication: true,
         });
     } catch (e) {
@@ -266,22 +266,18 @@ export async function Decryption(
         if (encrypted_privateKey === null) {
             console.log('encrypted_privateKey is null');
             return null;
-        } else {
-            console.log('encrypted_privateKey', encrypted_privateKey);
-            console.log('encrypted_AES_key_for_key', encrypted_AES_key_for_key);
-        }
-
+        } 
+		
         const rsa_key = new RSAKey();
         if (preReady_private_key) {
             rsa_key.setPrivateString(preReady_private_key);
         } else {
-            const KeyStore_PrivateKey = await Get_KeyStore_PrivateKey('For Decryption');
+            const KeyStore_PrivateKey = await Get_KeyStore_PrivateKey('복호화間 KeyStore_Key에 접근합니다');
             console.log('KeyStore_PrivateKey', KeyStore_PrivateKey);
             rsa_key.setPrivateString(KeyStore_PrivateKey);
         }
 
         //암호화되어있는 로컬 비밀키를 복호화
-
         const AES_Key = rsa_key.decrypt(encrypted_AES_key_for_key);
         console.log('AES_KEY=rsa_key.decrypt', AES_Key);
         var privateKey_bytes = await CryptoJS.AES.decrypt(encrypted_privateKey, AES_Key);

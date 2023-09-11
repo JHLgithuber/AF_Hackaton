@@ -25,9 +25,7 @@ export default function ChatScreen() {
 
     const fetchMessages = async () => {
         console.log('Start fetching KeyStore_PrivateKey...');
-        const KeyStore_PrivateKey = await CryptoModule.Get_KeyStore_PrivateKey(
-            'Message Fetching...'
-        );
+        const KeyStore_PrivateKey = await CryptoModule.Get_KeyStore_PrivateKey('메시지를 가져옵니다');
         console.log('CryptoModule.Get_KeyStore_PrivateKey completed: ', KeyStore_PrivateKey);
         //await executeTransaction();
 
@@ -148,7 +146,7 @@ export default function ChatScreen() {
             //CryptoModule.Encryption();//메시지 암호화
             // 기존의 메시지 삽입 로직
             console.log('SendingMessage', message);
-            let public_key_object = await ChatIO.request_public_key("Give me your KEY!!!");
+            let public_key_object = await ChatIO.request_public_key("Give me your KEY by phone!!!");
 			let public_server_key_object = await get_server_public_key();
 			console.log("public_server_key",public_server_key_object.public_key);
             let encrypted = await CryptoModule.Encryption(

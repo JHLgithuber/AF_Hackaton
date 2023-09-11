@@ -266,23 +266,24 @@ export async function Decryption(
         if (preReady_private_key) {
             rsa_key.setPrivateString(preReady_private_key);
         } else {
-            rsa_key.setPrivateString(await Get_KeyStore_PrivateKey('For Decryption'));
+            rsa_key.setPrivateString(await Get_KeyStore_PrivateKey('복호화중 KeyStore_Key에 접근합니다'));
         }
-
-        //서버에서 비밀키를 가져와서 AES키를 1차 복호화
-        const rsa_server = new RSAKey();
-        console.log(await get_server_private_key(server_key_hash));
-        rsa_server.setPrivateString(await get_server_private_key(server_key_hash));
-        console.log('encrypt_AES_Key', encrypt_AES_Key);
-        const server_decrypt_AES_key = await rsa_server.decrypt(encrypt_AES_Key);
-        console.log('server_decrypt_AES_key', server_decrypt_AES_key);
-
-        //암호화되어있는 로컬 비밀키를 복호화
+		
+		//암호화되어있는 로컬 비밀키를 복호화
         const AES_Key = await rsa_key.decrypt(encrypted_AES_key_for_key);
         console.log('AES_KEY=rsa_key.decrypt', AES_Key);
         var privateKey_bytes = await CryptoJS.AES.decrypt(encrypted_privateKey, AES_Key);
         var privateKey = await privateKey_bytes.toString(CryptoJS.enc.Utf8);
         console.log('privateKey', privateKey);
+
+        //서버에서 비밀키를 가져와서 AES키를 1차 복호화
+        const rsa_server = new RSAKey();
+		const server_private_key = await get_server_private_key(server_key_hash);
+        console.log('server_private_key', server_private_key);
+        rsa_server.setPrivateString(server_private_key);
+        console.log('encrypt_AES_Key', encrypt_AES_Key);
+        const server_decrypt_AES_key = await rsa_server.decrypt(encrypt_AES_Key);
+        console.log('server_decrypt_AES_key', server_decrypt_AES_key);
 
         //복호화된 로컬 비밀키로 AES키를 최종 복호화
         const rsa = new RSAKey();

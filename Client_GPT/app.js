@@ -49,7 +49,7 @@ var _this = this;
 //app.ts
 require('dotenv').config();
 var OpenAI = require('openai');
-var CryptoModule = require('./HybridCryptoModuleForNodeJS.js');
+var CryptoModule = require('./HybridCryptoModuleForNodeJS');
 //import * as CryptoModule from './HybridCryptoModuleForNodeJS';
 var _a = require('./ConnectionModule'), Messenger_IO = _a.Messenger_IO, UnHandled_Receiving_Message = _a.UnHandled_Receiving_Message, get_server_public_key = _a.get_server_public_key, get_server_private_key = _a.get_server_private_key;
 var uuidv4 = require('uuid').v4;
@@ -106,7 +106,7 @@ var onSend = function (newMessages) {
                                     //CryptoModule.Encryption();//메시지 암호화
                                     // 기존의 메시지 삽입 로직
                                     console.log('SendingMessage', message);
-                                    return [4 /*yield*/, ChatIO.request_public_key("Give me your KEY!!!")];
+                                    return [4 /*yield*/, ChatIO.request_public_key("Give me your KEY by GPT_Client!!!")];
                                 case 1:
                                     public_key_object = _a.sent();
                                     return [4 /*yield*/, get_server_public_key()];
@@ -180,6 +180,12 @@ function AI_request() {
         });
     });
 }
+var intervalId = setInterval(function () {
+    while (UnHandled_Receiving_Message.length) {
+        onReceive(UnHandled_Receiving_Message[0]);
+        UnHandled_Receiving_Message.shift();
+    }
+}, 10000); // 1초마다 반복
 function main() {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {

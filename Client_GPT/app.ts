@@ -1,7 +1,7 @@
 //app.ts
 require('dotenv').config();
 const OpenAI = require('openai');
-const CryptoModule = require('./HybridCryptoModuleForNodeJS.js');
+const CryptoModule = require('./HybridCryptoModuleForNodeJS');
 //import * as CryptoModule from './HybridCryptoModuleForNodeJS';
 const {
     Messenger_IO,
@@ -15,6 +15,9 @@ const ChatIO = new Messenger_IO(process.env.MESSENGER_IO_URL);
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
+
+
+
 
 const UserName='GPT_AI';
 const UserID=1000;
@@ -58,7 +61,7 @@ const onSend = async (newMessages = []) => {
         //CryptoModule.Encryption();//메시지 암호화
         // 기존의 메시지 삽입 로직
         console.log('SendingMessage', message);
-        let public_key_object = await ChatIO.request_public_key("Give me your KEY!!!");
+        let public_key_object = await ChatIO.request_public_key("Give me your KEY by GPT_Client!!!");
         let public_server_key_object = await get_server_public_key();
         console.log('public_server_key', public_server_key_object.public_key);
         let encrypted = await CryptoModule.Encryption(
@@ -165,6 +168,14 @@ async function AI_request() {
     });
     AI_messages.push(completion.choices[0].message);
 }
+
+
+const intervalId = setInterval(() => {
+    while (UnHandled_Receiving_Message.length) {
+        onReceive(UnHandled_Receiving_Message[0]);
+        UnHandled_Receiving_Message.shift();
+    }
+}, 3000); // 3초마다 반복
 
 async function main() {
 	onSend([{text:"hello"}])

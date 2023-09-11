@@ -2,6 +2,7 @@
 import io from 'socket.io-client';
 import React, { useState } from 'react';
 import * as CryptoModule from './HybridCryptoModule';
+const myid = 100;
 
 export var UnHandled_Receiving_Message = [];
 
@@ -17,17 +18,27 @@ export class Messenger_IO {
 
         this.socket.on('receive_message', (text) => {
             console.log('받은 메시지: ', text);
+            // 특정 id를 무시하는 로직
+            if (text.user._id === String(myid)) {
+                console.log('id 1000을 무시합니다.');
+                return;
+            }
             UnHandled_Receiving_Message.push(text);
             console.log('UnHandled_Receiving_Message', UnHandled_Receiving_Message);
         });
 
         this.socket.on('receive_request_public_key', async (data) => {
             console.log('받은 request_public_key: ', data);
-			//console.log(CryptoModule.Get_PublicKey());
-			const public_key_object=await CryptoModule.Get_PublicKey();
-			console.log('보낼 public_key',public_key_object)
+            // 특정 id를 무시하는 로직
+            if (data.id === myid) {
+                console.log('id 100을 무시합니다.');
+                return;
+            }
+            //console.log(CryptoModule.Get_PublicKey());
+            const public_key_object = await CryptoModule.Get_PublicKey();
+            console.log('보낼 public_key', public_key_object);
             this.socket.emit('response_public_key', {
-                id: 100,
+                id: myid,
                 public_key: public_key_object,
             });
         });
@@ -41,9 +52,18 @@ export class Messenger_IO {
     request_public_key(data) {
         return new Promise((resolve, reject) => {
             console.log('Messenger_IO request_public_key', data);
-            this.socket.emit('request_public_key', data);
+            this.socket.emit('request_public_key', {
+                id: myid,
+                data: data,
+            });
             this.socket.on('receive_response_public_key', (receive_data) => {
                 console.log('받은 receive_response_public_key: ', receive_data);
+
+                // 특정 id를 무시하는 로직
+                if (receive_data.id === myid) {
+                    console.log('id 100을 무시합니다.');
+                    return;
+                }
                 resolve(receive_data.public_key);
             });
         });

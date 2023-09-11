@@ -1,6 +1,7 @@
 //ConnectionModule.ts
 const io = require('socket.io-client');
-const CryptoModule = require('./HybridCryptoModuleForNodeJS.js');
+const CryptoModule = require('./HybridCryptoModuleForNodeJS');
+const myid = 1000;
 
 //import React, { useState } from 'react';
 
@@ -19,12 +20,22 @@ export class Messenger_IO {
 
         this.socket.on('receive_message', (text) => {
             console.log('받은 메시지: ', text);
+            // 특정 id를 무시하는 로직
+            if (text.user._id === String(myid)) {
+                console.log('id 1000을 무시합니다.');
+                return;
+            }
             UnHandled_Receiving_Message.push(text);
             console.log('UnHandled_Receiving_Message', UnHandled_Receiving_Message);
         });
 
         this.socket.on('receive_request_public_key', (data) => {
             console.log('받은 request_public_key: ', data);
+            // 특정 id를 무시하는 로직
+            if (data.id === myid) {
+                console.log('id 1000을 무시합니다.');
+                return;
+            }
             this.socket.emit('response_public_key', {
                 id: 1000,
                 public_key: CryptoModule.Get_PublicKey(),
@@ -40,12 +51,15 @@ export class Messenger_IO {
     request_public_key(data) {
         return new Promise((resolve, reject) => {
             console.log('Messenger_IO request_public_key', data);
-            this.socket.emit('request_public_key', { data });
+            this.socket.emit('request_public_key', {
+                id: myid,
+                data: data,
+            });
             this.socket.on('receive_response_public_key', (receive_data) => {
                 console.log('받은 receive_response_public_key: ', receive_data);
 
                 // 특정 id를 무시하는 로직
-                if (receive_data.id === 1000) {
+                if (receive_data.id === myid) {
                     console.log('id 1000을 무시합니다.');
                     return;
                 }

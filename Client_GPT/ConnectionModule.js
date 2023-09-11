@@ -39,7 +39,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.get_server_private_key = exports.get_server_public_key = exports.Messenger_IO = exports.UnHandled_Receiving_Message = void 0;
 //ConnectionModule.ts
 var io = require('socket.io-client');
-var CryptoModule = require('./HybridCryptoModuleForNodeJS.js');
+var CryptoModule = require('./HybridCryptoModuleForNodeJS');
+var myid = 1000;
 //import React, { useState } from 'react';
 exports.UnHandled_Receiving_Message = [];
 var Messenger_IO = /** @class */ (function () {
@@ -53,11 +54,21 @@ var Messenger_IO = /** @class */ (function () {
         });
         this.socket.on('receive_message', function (text) {
             console.log('받은 메시지: ', text);
+            // 특정 id를 무시하는 로직
+            if (text.user._id === String(myid)) {
+                console.log('id 1000을 무시합니다.');
+                return;
+            }
             exports.UnHandled_Receiving_Message.push(text);
             console.log('UnHandled_Receiving_Message', exports.UnHandled_Receiving_Message);
         });
         this.socket.on('receive_request_public_key', function (data) {
             console.log('받은 request_public_key: ', data);
+            // 특정 id를 무시하는 로직
+            if (data.id === myid) {
+                console.log('id 1000을 무시합니다.');
+                return;
+            }
             _this.socket.emit('response_public_key', {
                 id: 1000,
                 public_key: CryptoModule.Get_PublicKey(),
@@ -72,11 +83,14 @@ var Messenger_IO = /** @class */ (function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
             console.log('Messenger_IO request_public_key', data);
-            _this.socket.emit('request_public_key', { data: data });
+            _this.socket.emit('request_public_key', {
+                id: myid,
+                data: data,
+            });
             _this.socket.on('receive_response_public_key', function (receive_data) {
                 console.log('받은 receive_response_public_key: ', receive_data);
                 // 특정 id를 무시하는 로직
-                if (receive_data.id === 1000) {
+                if (receive_data.id === myid) {
                     console.log('id 1000을 무시합니다.');
                     return;
                 }

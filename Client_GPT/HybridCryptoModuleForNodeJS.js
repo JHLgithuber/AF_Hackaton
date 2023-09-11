@@ -291,11 +291,11 @@ exports.Encryption = Encryption;
 //자신의 비밀키로 복호화
 function Decryption(public_key_hash, server_key_hash, encrypt_AES_Key, ciphertext, preReady_private_key) {
     return __awaiter(this, void 0, void 0, function () {
-        var encrypted_privateKey_2, encrypted_AES_key_for_key_1, rsa_key, _a, _b, rsa_server, _c, _d, _e, _f, server_decrypt_AES_key, AES_Key, privateKey_bytes, privateKey, rsa, Data_AES_Key, bytes, originalData, e_4;
-        return __generator(this, function (_g) {
-            switch (_g.label) {
+        var encrypted_privateKey_2, encrypted_AES_key_for_key_1, rsa_key, _a, _b, AES_Key, privateKey_bytes, privateKey, rsa_server, server_private_key, server_decrypt_AES_key, rsa, Data_AES_Key, bytes, originalData, e_4;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
                 case 0:
-                    _g.trys.push([0, 15, , 16]);
+                    _c.trys.push([0, 14, , 15]);
                     encrypted_privateKey_2 = null;
                     encrypted_AES_key_for_key_1 = null;
                     console.log('encrypted_AES_key is exist?', encrypt_AES_Key);
@@ -327,7 +327,7 @@ function Decryption(public_key_hash, server_key_hash, encrypt_AES_Key, ciphertex
                             throw error; // 에러를 상위로 전파
                         })];
                 case 1:
-                    _g.sent();
+                    _c.sent();
                     if (encrypted_privateKey_2 === null) {
                         console.log('encrypted_privateKey is null');
                         return [2 /*return*/, null];
@@ -338,57 +338,53 @@ function Decryption(public_key_hash, server_key_hash, encrypt_AES_Key, ciphertex
                     return [3 /*break*/, 4];
                 case 2:
                     _b = (_a = rsa_key).setPrivateString;
-                    return [4 /*yield*/, Get_KeyStore_PrivateKey('For Decryption')];
+                    return [4 /*yield*/, Get_KeyStore_PrivateKey('복호화중 KeyStore_Key에 접근합니다')];
                 case 3:
-                    _b.apply(_a, [_g.sent()]);
-                    _g.label = 4;
-                case 4:
-                    rsa_server = new RSAKey();
-                    _d = (_c = console).log;
-                    return [4 /*yield*/, get_server_private_key(server_key_hash)];
+                    _b.apply(_a, [_c.sent()]);
+                    _c.label = 4;
+                case 4: return [4 /*yield*/, rsa_key.decrypt(encrypted_AES_key_for_key_1)];
                 case 5:
-                    _d.apply(_c, [_g.sent()]);
-                    _f = (_e = rsa_server).setPrivateString;
-                    return [4 /*yield*/, get_server_private_key(server_key_hash)];
-                case 6:
-                    _f.apply(_e, [_g.sent()]);
-                    console.log('encrypt_AES_Key', encrypt_AES_Key);
-                    return [4 /*yield*/, rsa_server.decrypt(encrypt_AES_Key)];
-                case 7:
-                    server_decrypt_AES_key = _g.sent();
-                    console.log('server_decrypt_AES_key', server_decrypt_AES_key);
-                    return [4 /*yield*/, rsa_key.decrypt(encrypted_AES_key_for_key_1)];
-                case 8:
-                    AES_Key = _g.sent();
+                    AES_Key = _c.sent();
                     console.log('AES_KEY=rsa_key.decrypt', AES_Key);
                     return [4 /*yield*/, CryptoJS.AES.decrypt(encrypted_privateKey_2, AES_Key)];
-                case 9:
-                    privateKey_bytes = _g.sent();
+                case 6:
+                    privateKey_bytes = _c.sent();
                     return [4 /*yield*/, privateKey_bytes.toString(CryptoJS.enc.Utf8)];
-                case 10:
-                    privateKey = _g.sent();
+                case 7:
+                    privateKey = _c.sent();
                     console.log('privateKey', privateKey);
+                    rsa_server = new RSAKey();
+                    return [4 /*yield*/, get_server_private_key(server_key_hash)];
+                case 8:
+                    server_private_key = _c.sent();
+                    console.log('server_private_key', server_private_key);
+                    rsa_server.setPrivateString(server_private_key);
+                    console.log('encrypt_AES_Key', encrypt_AES_Key);
+                    return [4 /*yield*/, rsa_server.decrypt(encrypt_AES_Key)];
+                case 9:
+                    server_decrypt_AES_key = _c.sent();
+                    console.log('server_decrypt_AES_key', server_decrypt_AES_key);
                     rsa = new RSAKey();
                     return [4 /*yield*/, rsa.setPrivateString(privateKey)];
-                case 11:
-                    _g.sent();
+                case 10:
+                    _c.sent();
                     return [4 /*yield*/, rsa.decrypt(server_decrypt_AES_key)];
-                case 12:
-                    Data_AES_Key = _g.sent();
+                case 11:
+                    Data_AES_Key = _c.sent();
                     console.log('Data_AES_Key', Data_AES_Key);
                     return [4 /*yield*/, CryptoJS.AES.decrypt(ciphertext, Data_AES_Key)];
-                case 13:
-                    bytes = _g.sent();
+                case 12:
+                    bytes = _c.sent();
                     return [4 /*yield*/, bytes.toString(CryptoJS.enc.Utf8)];
-                case 14:
-                    originalData = _g.sent();
+                case 13:
+                    originalData = _c.sent();
                     console.log('originalData', originalData);
                     return [2 /*return*/, originalData];
-                case 15:
-                    e_4 = _g.sent();
+                case 14:
+                    e_4 = _c.sent();
                     console.log('Decryption ERROR: ', e_4);
                     return [2 /*return*/, 'Decryption ERROR: ' + e_4];
-                case 16: return [2 /*return*/];
+                case 15: return [2 /*return*/];
             }
         });
     });
