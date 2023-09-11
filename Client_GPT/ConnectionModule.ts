@@ -29,16 +29,18 @@ export class Messenger_IO {
             console.log('UnHandled_Receiving_Message', UnHandled_Receiving_Message);
         });
 
-        this.socket.on('receive_request_public_key', (data) => {
+        this.socket.on('receive_request_public_key', async (data) => {
             console.log('받은 request_public_key: ', data);
             // 특정 id를 무시하는 로직
             if (data.id === myid) {
                 console.log('id 1000을 무시합니다.');
                 return;
             }
+            const public_key_object = await CryptoModule.Get_PublicKey();
+            console.log('보낼 public_key', public_key_object);
             this.socket.emit('response_public_key', {
-                id: 1000,
-                public_key: CryptoModule.Get_PublicKey(),
+                id: myid,
+                public_key: public_key_object,
             });
         });
     }

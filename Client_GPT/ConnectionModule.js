@@ -62,18 +62,29 @@ var Messenger_IO = /** @class */ (function () {
             exports.UnHandled_Receiving_Message.push(text);
             console.log('UnHandled_Receiving_Message', exports.UnHandled_Receiving_Message);
         });
-        this.socket.on('receive_request_public_key', function (data) {
-            console.log('받은 request_public_key: ', data);
-            // 특정 id를 무시하는 로직
-            if (data.id === myid) {
-                console.log('id 1000을 무시합니다.');
-                return;
-            }
-            _this.socket.emit('response_public_key', {
-                id: 1000,
-                public_key: CryptoModule.Get_PublicKey(),
+        this.socket.on('receive_request_public_key', function (data) { return __awaiter(_this, void 0, void 0, function () {
+            var public_key_object;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        console.log('받은 request_public_key: ', data);
+                        // 특정 id를 무시하는 로직
+                        if (data.id === myid) {
+                            console.log('id 1000을 무시합니다.');
+                            return [2 /*return*/];
+                        }
+                        return [4 /*yield*/, CryptoModule.Get_PublicKey()];
+                    case 1:
+                        public_key_object = _a.sent();
+                        console.log('보낼 public_key', public_key_object);
+                        this.socket.emit('response_public_key', {
+                            id: myid,
+                            public_key: public_key_object,
+                        });
+                        return [2 /*return*/];
+                }
             });
-        });
+        }); });
     }
     Messenger_IO.prototype.sendMessage = function (message) {
         console.log('Messenger_IO message', message);

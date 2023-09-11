@@ -34,7 +34,6 @@ export class Messenger_IO {
                 console.log('id 100을 무시합니다.');
                 return;
             }
-            //console.log(CryptoModule.Get_PublicKey());
             const public_key_object = await CryptoModule.Get_PublicKey();
             console.log('보낼 public_key', public_key_object);
             this.socket.emit('response_public_key', {
