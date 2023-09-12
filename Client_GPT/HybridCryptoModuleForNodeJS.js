@@ -60,7 +60,7 @@ var crypto = require('crypto');
 var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.Database('Encrypted_Chat_Data.db');
 var RSAKey = require('react-native-rsa');
-var bits = 2048; //안전한건 2048 이상
+var bits = 512; //안전한건 2048 이상
 var exponent = '65537'; // must be a string. This is hex string. decimal = 65537
 function Get_KeyStore_PrivateKey(authenticationPrompt) {
     return __awaiter(this, void 0, void 0, function () {
@@ -298,7 +298,11 @@ function Decryption(public_key_hash, server_key_hash, encrypt_AES_Key, ciphertex
                     _c.trys.push([0, 14, , 15]);
                     encrypted_privateKey_2 = null;
                     encrypted_AES_key_for_key_1 = null;
-                    console.log('encrypted_AES_key is exist?', encrypt_AES_Key);
+                    console.log('public_key_hash is exist?', public_key_hash);
+                    console.log('server_key_hash is exist?', server_key_hash);
+                    console.log('encrypt_AES_Key is exist?', encrypt_AES_Key);
+                    console.log('ciphertext is exist?', ciphertext);
+                    console.log('preReady_private_key is exist?', preReady_private_key);
                     return [4 /*yield*/, new Promise(function (resolve, reject) {
                             db.serialize(function () {
                                 db.get('SELECT encrypted_private_key, encrypted_AES_key FROM KeyTable WHERE public_key_hash = ?', [public_key_hash], function (err, row) {
