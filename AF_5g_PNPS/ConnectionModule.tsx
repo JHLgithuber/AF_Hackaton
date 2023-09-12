@@ -1,5 +1,6 @@
 //ConnectionModule.tsx
 import io from 'socket.io-client';
+import Toast from 'react-native-root-toast';
 import React, { useState } from 'react';
 import * as CryptoModule from './HybridCryptoModule';
 const myid = 100;
@@ -55,6 +56,7 @@ export class Messenger_IO {
                 console.log('id 100을 무시합니다.');
                 return;
             }
+			const toast = Toast.show('상대가 공개키를 요청했습니다');
             const public_key_object = await CryptoModule.Get_PublicKey();
             console.log('보낼 public_key', public_key_object);
             this.socket.emit('response_public_key', {
