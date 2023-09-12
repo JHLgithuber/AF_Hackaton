@@ -179,10 +179,10 @@ const intervalId = setInterval(() => {
     }
 }, 1000); // 1초마다 반복
 
-
+/*
 const intervalMakeKey = setInterval(() => {
     CryptoModule.RSA_KeyPair_Maker();
-}, 100000); // 100초마다 반복
+}, 100000); // 100초마다 반복*/
 
 async function main() {
     AI_request();
