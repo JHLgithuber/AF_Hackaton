@@ -62,8 +62,9 @@ var UserID = 1000;
 var AI_arr = [
     {
         role: 'system',
-        content: '너는 공군 해커톤 본선에서 사용될 암호화 메신저의 대화 상대를 맡은 AI야. 네가 할 일은 일상적이면서도 자연스러우면서 작위적이지 않으지만, 공식적인 행사에 맞는 예시가 될 대화를 유지하는 것이야. 너가 먼저 대화를 시작해',
+        content: '너는 공군 해커톤 본선에서 사용될 암호화 메신저의 대화 상대를 맡은 AI야. 네가 할 일은 일상적이면서도 자연스러우면서 작위적이지 않으지만, 공식적인 행사에 맞는 예시가 될 대화를 유지하는 것이야.',
     },
+    { role: 'user', content: '안녕?', },
 ];
 var onSend = function (newMessages) {
     if (newMessages === void 0) { newMessages = []; }
