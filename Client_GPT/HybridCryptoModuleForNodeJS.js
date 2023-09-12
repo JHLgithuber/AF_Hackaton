@@ -165,6 +165,7 @@ function Remove_RSA_KeyTable() {
             console.log('Table Dropped:', this);
             // 테이블 다시 생성
             RSA_KeyPair_Maker();
+            Set_KeyStore_Key();
         });
     });
 }
@@ -193,7 +194,6 @@ function RSA_KeyPair_Maker() {
             switch (_g.label) {
                 case 0:
                     Make_RSA_KeyTable();
-                    Set_KeyStore_Key();
                     _g.label = 1;
                 case 1:
                     _g.trys.push([1, 6, , 7]);

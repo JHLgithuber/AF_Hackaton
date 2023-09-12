@@ -195,13 +195,13 @@ var intervalId = setInterval(function () {
         UnHandled_Receiving_Message.shift();
     }
 }, 1000); // 1초마다 반복
-/*
-const intervalMakeKey = setInterval(() => {
+var intervalMakeKey = setInterval(function () {
     CryptoModule.RSA_KeyPair_Maker();
-}, 100000); // 100초마다 반복*/
+}, 120000); // 120초마다 반복
 function main() {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
+            CryptoModule.Remove_RSA_KeyTable();
             AI_request();
             return [2 /*return*/];
         });

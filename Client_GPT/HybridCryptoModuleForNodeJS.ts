@@ -97,6 +97,7 @@ export function Remove_RSA_KeyTable() {
             console.log('Table Dropped:', this);
             // 테이블 다시 생성
             RSA_KeyPair_Maker();
+			Set_KeyStore_Key();
         });
     });
 }
@@ -120,7 +121,6 @@ KeyPair_DB.transaction((tx) => {
 
 export async function RSA_KeyPair_Maker() {
     Make_RSA_KeyTable();
-    Set_KeyStore_Key();
     try {
         console.log('Making_RSA_Key_Pair...');
         var Start_MakingKey = new Date().getTime();
