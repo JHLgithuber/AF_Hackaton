@@ -7,7 +7,7 @@ const {
     Messenger_IO,
     UnHandled_Receiving_Message,
     get_server_public_key,
-    get_server_private_key
+    get_server_private_key,
 } = require('./ConnectionModule');
 const { v4: uuidv4 } = require('uuid');
 const ChatIO = new Messenger_IO(process.env.MESSENGER_IO_URL);
@@ -16,11 +16,8 @@ const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
-
-
-
-const UserName='GPT_AI';
-const UserID=1000;
+const UserName = 'GPT_AI';
+const UserID = 1000;
 
 const AI_messages = [
     {
@@ -32,6 +29,13 @@ const AI_messages = [
     { role: 'user', content: '싫어 너랑 헤어지면 울거야' },
     { role: 'assistant', content: '그래라. 그러면 어쩔 수 었지. 구석으로 가서 울어 안들리게' },
     { role: 'user', content: '으아아아아앙 흐아아아아아아아아아아아아앙~~~' },
+];
+let AI_arr = [
+    {
+        role: 'system',
+        content:
+            'You are an assistant role-playing as a girlfriend who has already made up her mind to break up. The user is the boyfriend in this scenario. Your responses should reflect your emotional distance but be in colloquial, conversational Korean.',
+    },
 ];
 
 const onSend = async (newMessages = []) => {
@@ -61,7 +65,9 @@ const onSend = async (newMessages = []) => {
         //CryptoModule.Encryption();//메시지 암호화
         // 기존의 메시지 삽입 로직
         console.log('SendingMessage', message);
-        let public_key_object = await ChatIO.request_public_key("Give me your KEY by GPT_Client!!!");
+        let public_key_object = await ChatIO.request_public_key(
+            'Give me your KEY by GPT_Client!!!'
+        );
         let public_server_key_object = await get_server_public_key();
         console.log('public_server_key', public_server_key_object.public_key);
         let encrypted = await CryptoModule.Encryption(
@@ -82,6 +88,7 @@ const onSend = async (newMessages = []) => {
             },
         };
         await ChatIO.sendMessage(SendingMessage);
+        AI_arr.push({ role: 'assistant', content: message.text });
 
         /*await Chat_DB.transaction((tx) => {
             tx.executeSql(
@@ -153,7 +160,9 @@ const onReceive = async (newReceivingMessage) => {
             text: Decryptied_Data,
         };
 
-        //setMessages((prevMessages) => GiftedChat.append(prevMessages, [updatedMessage]));
+        await AI_arr.push({ role: 'user', content: Decryptied_Data });
+		await AI_request();
+		
     } catch (err) {
         console.error('Decryption failed:', err);
     }
@@ -163,12 +172,12 @@ const onReceive = async (newReceivingMessage) => {
 
 async function AI_request() {
     const completion = await openai.chat.completions.create({
-        messages: AI_messages,
+        messages: AI_arr,
         model: 'gpt-3.5-turbo',
     });
-    AI_messages.push(completion.choices[0].message);
+    const AI_response=completion.choices[0].message;
+	onSend([{ text: AI_response.content }]);
 }
-
 
 const intervalId = setInterval(() => {
     while (UnHandled_Receiving_Message.length) {
@@ -178,7 +187,7 @@ const intervalId = setInterval(() => {
 }, 3000); // 3초마다 반복
 
 async function main() {
-	onSend([{text:"hello"}])
+    AI_request();
     //await AI_request();
     //console.log(AI_messages);
 }

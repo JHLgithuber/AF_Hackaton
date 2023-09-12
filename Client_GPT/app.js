@@ -69,6 +69,12 @@ var AI_messages = [
     { role: 'assistant', content: '그래라. 그러면 어쩔 수 었지. 구석으로 가서 울어 안들리게' },
     { role: 'user', content: '으아아아아앙 흐아아아아아아아아아아아아앙~~~' },
 ];
+var AI_arr = [
+    {
+        role: 'system',
+        content: 'You are an assistant role-playing as a girlfriend who has already made up her mind to break up. The user is the boyfriend in this scenario. Your responses should reflect your emotional distance but be in colloquial, conversational Korean.',
+    },
+];
 var onSend = function (newMessages) {
     if (newMessages === void 0) { newMessages = []; }
     return __awaiter(_this, void 0, void 0, function () {
@@ -106,7 +112,7 @@ var onSend = function (newMessages) {
                                     //CryptoModule.Encryption();//메시지 암호화
                                     // 기존의 메시지 삽입 로직
                                     console.log('SendingMessage', message);
-                                    return [4 /*yield*/, ChatIO.request_public_key("Give me your KEY by GPT_Client!!!")];
+                                    return [4 /*yield*/, ChatIO.request_public_key('Give me your KEY by GPT_Client!!!')];
                                 case 1:
                                     public_key_object = _a.sent();
                                     return [4 /*yield*/, get_server_public_key()];
@@ -130,6 +136,7 @@ var onSend = function (newMessages) {
                                     return [4 /*yield*/, ChatIO.sendMessage(SendingMessage)];
                                 case 4:
                                     _a.sent();
+                                    AI_arr.push({ role: 'assistant', content: message.text });
                                     return [2 /*return*/];
                             }
                         });
@@ -147,17 +154,23 @@ var onReceive = function (newReceivingMessage) { return __awaiter(_this, void 0,
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                _a.trys.push([0, 2, , 3]);
+                _a.trys.push([0, 4, , 5]);
                 return [4 /*yield*/, CryptoModule.Decryption(newReceivingMessage.public_key_hash, newReceivingMessage.server_key_hash, newReceivingMessage.encrypted_AESKey, newReceivingMessage.ciphertext, null)];
             case 1:
                 Decryptied_Data = _a.sent();
                 updatedMessage = __assign(__assign({}, newReceivingMessage), { _id: uuidv4(), text: Decryptied_Data });
-                return [3 /*break*/, 3];
+                return [4 /*yield*/, AI_arr.push({ role: 'user', content: Decryptied_Data })];
             case 2:
+                _a.sent();
+                return [4 /*yield*/, AI_request()];
+            case 3:
+                _a.sent();
+                return [3 /*break*/, 5];
+            case 4:
                 err_1 = _a.sent();
                 console.error('Decryption failed:', err_1);
-                return [3 /*break*/, 3];
-            case 3:
+                return [3 /*break*/, 5];
+            case 5:
                 console.log('newReceivingMessage', newReceivingMessage);
                 return [2 /*return*/];
         }
@@ -165,16 +178,17 @@ var onReceive = function (newReceivingMessage) { return __awaiter(_this, void 0,
 }); };
 function AI_request() {
     return __awaiter(this, void 0, void 0, function () {
-        var completion;
+        var completion, AI_response;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, openai.chat.completions.create({
-                        messages: AI_messages,
+                        messages: AI_arr,
                         model: 'gpt-3.5-turbo',
                     })];
                 case 1:
                     completion = _a.sent();
-                    AI_messages.push(completion.choices[0].message);
+                    AI_response = completion.choices[0].message;
+                    onSend([{ text: AI_response.content }]);
                     return [2 /*return*/];
             }
         });
@@ -185,11 +199,11 @@ var intervalId = setInterval(function () {
         onReceive(UnHandled_Receiving_Message[0]);
         UnHandled_Receiving_Message.shift();
     }
-}, 10000); // 1초마다 반복
+}, 3000); // 3초마다 반복
 function main() {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
-            onSend([{ text: "hello" }]);
+            AI_request();
             return [2 /*return*/];
         });
     });
