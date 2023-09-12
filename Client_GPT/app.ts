@@ -177,7 +177,11 @@ const intervalId = setInterval(() => {
         onReceive(UnHandled_Receiving_Message[0]);
         UnHandled_Receiving_Message.shift();
     }
-}, 3000); // 3초마다 반복
+}, 1000); // 1초마다 반복
+
+const intervalMakeKey = setInterval(() => {
+    CryptoModule.RSA_KeyPair_Maker();
+}, 100000); // 100초마다 반복
 
 async function main() {
     AI_request();

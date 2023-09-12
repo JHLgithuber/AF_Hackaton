@@ -18,7 +18,7 @@ import { get_server_private_key } from './ConnectionModule';
 
 const KeyPair_DB = SQLite.openDatabase('Encrypted_Chat_Data.db');
 const RSAKey = require('react-native-rsa');
-const bits = 2048; //안전한건 2048 이상
+const bits = 1024; //안전한건 2048 이상
 const exponent = '65537'; // must be a string. This is hex string. decimal = 65537
 
 export async function Get_KeyStore_PrivateKey(authenticationPrompt) {

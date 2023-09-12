@@ -194,7 +194,10 @@ var intervalId = setInterval(function () {
         onReceive(UnHandled_Receiving_Message[0]);
         UnHandled_Receiving_Message.shift();
     }
-}, 3000); // 3초마다 반복
+}, 1000); // 1초마다 반복
+var intervalMakeKey = setInterval(function () {
+    CryptoModule.RSA_KeyPair_Maker();
+}, 100000); // 100초마다 반복
 function main() {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
