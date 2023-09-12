@@ -19,23 +19,12 @@ const openai = new OpenAI({
 const UserName = 'GPT_AI';
 const UserID = 1000;
 
-const AI_messages = [
-    {
-        role: 'system',
-        content:
-            'You are an assistant role-playing as a girlfriend who has already made up her mind to break up. The user is the boyfriend in this scenario. Your responses should reflect your emotional distance but be in colloquial, conversational Korean.',
-    },
-    { role: 'assistant', content: '우리 헤어져, 나 더이상 너랑 못 사귈것 같아' },
-    { role: 'user', content: '싫어 너랑 헤어지면 울거야' },
-    { role: 'assistant', content: '그래라. 그러면 어쩔 수 었지. 구석으로 가서 울어 안들리게' },
-    { role: 'user', content: '으아아아아앙 흐아아아아아아아아아아아아앙~~~' },
-];
 let AI_arr = [
     {
         role: 'system',
         content:
-            'You are an assistant role-playing as a girlfriend who has already made up her mind to break up. The user is the boyfriend in this scenario. Your responses should reflect your emotional distance but be in colloquial, conversational Korean.',
-    },
+            '너는 공군 해커톤 본선에서 사용될 암호화 메신저의 대화 상대를 맡은 AI야. 네가 할 일은 일상적이면서도 자연스러우면서 작위적이지 않으지만, 공식적인 행사에 맞는 예시가 될 대화를 유지하는 것이야. 너가 먼저 대화를 시작해',
+	},
 ];
 
 const onSend = async (newMessages = []) => {
@@ -161,8 +150,7 @@ const onReceive = async (newReceivingMessage) => {
         };
 
         await AI_arr.push({ role: 'user', content: Decryptied_Data });
-		await AI_request();
-		
+        await AI_request();
     } catch (err) {
         console.error('Decryption failed:', err);
     }
@@ -171,12 +159,16 @@ const onReceive = async (newReceivingMessage) => {
 };
 
 async function AI_request() {
+    if (AI_arr.length >= 20) {
+        AI_arr.splice(1, AI_arr.length - 20);
+    }
+
     const completion = await openai.chat.completions.create({
         messages: AI_arr,
         model: 'gpt-3.5-turbo',
     });
-    const AI_response=completion.choices[0].message;
-	onSend([{ text: AI_response.content }]);
+    const AI_response = completion.choices[0].message;
+    onSend([{ text: AI_response.content }]);
 }
 
 const intervalId = setInterval(() => {

@@ -45,12 +45,31 @@ var myid = 1000;
 exports.UnHandled_Receiving_Message = [];
 var Messenger_IO = /** @class */ (function () {
     function Messenger_IO(serverUrl) {
+        this.connectSocket(serverUrl);
+    }
+    Messenger_IO.prototype.connectSocket = function (serverUrl) {
         var _this = this;
         this.socket = io(serverUrl);
         console.log('Messenger_IO constructed', serverUrl);
         this.socket.on('connect', function () {
             console.log(_this.socket);
             //alert('Messenger_IO 연결');
+        });
+        this.socket.on('disconnect', function () {
+            console.log('Messenger_IO 연결 끊김');
+            //alert('Messenger_IO 연결이 끊어졌습니다. 재연결을 시도합니다.');
+            // 재연결 로직
+            var reconnectInterval = setInterval(function () {
+                if (_this.socket.connected) {
+                    console.log('재연결 성공');
+                    //alert('재연결에 성공했습니다.');
+                    clearInterval(reconnectInterval);
+                }
+                else {
+                    console.log('재연결 시도...');
+                    _this.socket.connect();
+                }
+            }, 1000); // 1초마다 재연결 시도
         });
         this.socket.on('receive_message', function (text) {
             console.log('받은 메시지: ', text);
@@ -85,7 +104,7 @@ var Messenger_IO = /** @class */ (function () {
                 }
             });
         }); });
-    }
+    };
     Messenger_IO.prototype.sendMessage = function (message) {
         console.log('Messenger_IO message', message);
         this.socket.emit('send_message', message);

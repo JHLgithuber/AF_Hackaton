@@ -9,13 +9,35 @@ export var UnHandled_Receiving_Message = [];
 
 export class Messenger_IO {
     socket: any; // socket 필드를 명시적으로 선언합니다.
+
     constructor(serverUrl) {
+        this.connectSocket(serverUrl);
+    }
+
+    connectSocket(serverUrl) {
         this.socket = io(serverUrl);
         console.log('Messenger_IO constructed', serverUrl);
 
         this.socket.on('connect', () => {
             console.log(this.socket);
             //alert('Messenger_IO 연결');
+        });
+
+        this.socket.on('disconnect', () => {
+            console.log('Messenger_IO 연결 끊김');
+            //alert('Messenger_IO 연결이 끊어졌습니다. 재연결을 시도합니다.');
+
+            // 재연결 로직
+            let reconnectInterval = setInterval(() => {
+                if (this.socket.connected) {
+                    console.log('재연결 성공');
+                    //alert('재연결에 성공했습니다.');
+                    clearInterval(reconnectInterval);
+                } else {
+                    console.log('재연결 시도...');
+                    this.socket.connect();
+                }
+            }, 1000); // 1초마다 재연결 시도
         });
 
         this.socket.on('receive_message', (text) => {
