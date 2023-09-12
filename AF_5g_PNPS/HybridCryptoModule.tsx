@@ -30,6 +30,7 @@ export async function Get_KeyStore_PrivateKey(authenticationPrompt) {
             console.log('Get_KeyStore_PrivateKey', KeyStore_PrivateKey);
             return KeyStore_PrivateKey;
         } else {
+			Set_KeyStore_Key();
             RSA_KeyPair_Maker();
         }
     } catch (e) {
