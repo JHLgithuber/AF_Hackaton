@@ -60,7 +60,7 @@ var crypto = require('crypto');
 var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.Database('Encrypted_Chat_Data.db');
 var RSAKey = require('react-native-rsa');
-var bits = 1024; //안전한건 2048 이상
+var bits = 512; //안전한건 2048 이상
 var exponent = '65537'; // must be a string. This is hex string. decimal = 65537
 function Get_KeyStore_PrivateKey(authenticationPrompt) {
     return __awaiter(this, void 0, void 0, function () {
