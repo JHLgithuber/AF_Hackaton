@@ -4,7 +4,6 @@ import React from 'react';
 import { StyleSheet, TouchableOpacity, View, Text, Switch, TextInput } from 'react-native';
 import * as CryptoModule from './HybridCryptoModule';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import ChatIO from './ChatScreen'
 
 export default function SecurityScreen(props) {
 	const styles = StyleSheet.create({
@@ -47,7 +46,6 @@ export default function SecurityScreen(props) {
 	const saveStoredWS = async () => {
 		try {
 			await AsyncStorage.setItem('WS_address', WS);
-			await ChatIO.Messenger_IO.connectSocket();
 		} catch (e) {
 			console.error('Error saving data to AsyncStorage', e);
 		}

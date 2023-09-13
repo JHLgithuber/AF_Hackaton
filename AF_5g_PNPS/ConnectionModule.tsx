@@ -7,6 +7,7 @@ const myid = 100;
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export var UnHandled_Receiving_Message = [];
+let prev_message=null;
 
 export class Messenger_IO {
     constructor() {
@@ -47,7 +48,12 @@ export class Messenger_IO {
                 console.log('id 100을 무시합니다.');
                 return;
             }
+			if (text.ciphertext==prev_message){
+				console.log('중복전송을 무시합니다.');
+                return;
+			}
             UnHandled_Receiving_Message.push(text);
+			prev_message=text.ciphertext;
             console.log('UnHandled_Receiving_Message', UnHandled_Receiving_Message);
         });
 
