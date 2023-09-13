@@ -4,15 +4,17 @@ import Toast from 'react-native-root-toast';
 import React, { useState } from 'react';
 import * as CryptoModule from './HybridCryptoModule';
 const myid = 100;
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export var UnHandled_Receiving_Message = [];
 
 export class Messenger_IO {
-    constructor(serverUrl) {
-        this.connectSocket(serverUrl);
+    constructor() {
+        this.connectSocket();
     }
 
-    connectSocket(serverUrl) {
+    async connectSocket() {
+		serverUrl=await AsyncStorage.getItem('WS_address');
         this.socket = io(serverUrl);
         console.log('Messenger_IO constructed', serverUrl);
 
@@ -35,7 +37,7 @@ export class Messenger_IO {
                     console.log('재연결 시도...');
                     this.socket.connect();
                 }
-            }, 1000); // 5초마다 재연결 시도
+            }, 1000); // 1초마다 재연결 시도
         });
 
         this.socket.on('receive_message', (text) => {

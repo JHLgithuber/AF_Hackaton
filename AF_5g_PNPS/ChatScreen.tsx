@@ -11,8 +11,8 @@ import useHandleUnreadMessages from './useHandleUnreadMessages';
 
 // 채팅 저장을 위한 SQLite 데이터베이스를 열기
 const Chat_DB = SQLite.openDatabase('Encrypted_Chat_Data.db');
-const ChatIO = new Messenger_IO(process.env.MESSENGER_IO_URL);
-console.log("process.env.MESSENGER_IO_URL",process.env.MESSENGER_IO_URL);
+let ChatIO = new Messenger_IO();
+//console.log("process.env.MESSENGER_IO_URL",process.env.MESSENGER_IO_URL);
 export var existed_UnHandled_Receiving_Message = 0;
 
 export default function ChatScreen() {
@@ -132,6 +132,7 @@ export default function ChatScreen() {
                             console.log('Table Dropped:', result);
                             // 테이블 다시 생성
                             Make_new_DB();
+							ChatIO = new Messenger_IO();
                         },
                         (_, err) => {
                             console.log('Drop Table Error:', err);

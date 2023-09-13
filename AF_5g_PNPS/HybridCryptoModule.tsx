@@ -237,7 +237,11 @@ export async function Decryption(
         let encrypted_privateKey = null;
         let encrypted_AES_key_for_key = null;
 
-        console.log('encrypted_AES_key is exist?', encrypt_AES_Key);
+		console.log('public_key_hash is exist?', public_key_hash);
+        console.log('server_key_hash is exist?', server_key_hash);
+		console.log('encrypt_AES_Key is exist?', encrypt_AES_Key);
+		console.log('ciphertext is exist?', ciphertext);
+		console.log('preReady_private_key is exist?', preReady_private_key);
 
         await new Promise((resolve, reject) => {
             KeyPair_DB.transaction((tx) => {
