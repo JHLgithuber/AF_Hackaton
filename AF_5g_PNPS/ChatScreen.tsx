@@ -148,16 +148,16 @@ export default function ChatScreen() {
             // 기존의 메시지 삽입 로직
             console.log('SendingMessage', message);
             let public_key_object = await ChatIO.request_public_key("Give me your KEY by phone!!!");
+			let public_key_object_of_me= await CryptoModule.Get_PublicKey();
 			let public_server_key_object = await get_server_public_key();
 			console.log("public_server_key",public_server_key_object.public_key);
-            let encrypted = await CryptoModule.Encryption(
+            
+			let encrypted = await CryptoModule.Encryption(
                 public_key_object.public_key,
                 public_server_key_object.public_key,
                 message.text
             );
 			
-			
-
             const SendingMessage = {
                 ciphertext: encrypted.ciphertext,
                 encrypted_AESKey: encrypted.server_encrypted_AESKey,
@@ -170,20 +170,38 @@ export default function ChatScreen() {
                 },
             };
             await ChatIO.sendMessage(SendingMessage);
+			
+			let encrypted_for_me = await CryptoModule.Encryption(
+                public_key_object_of_me.public_key,
+                public_server_key_object.public_key,
+                message.text
+            );
+			
+            const SavingMessage = {
+                ciphertext: encrypted_for_me.ciphertext,
+                encrypted_AESKey: encrypted_for_me.server_encrypted_AESKey,
+                public_key_hash: public_key_object_of_me.public_key_hash,
+				server_key_hash: public_server_key_object.hash,
+                createdAt: message.createdAt.toISOString(),
+                user: {
+                    _id: UserID.toString(),
+                    name: UserName,
+                },
+            };
 
             await Chat_DB.transaction((tx) => {
                 tx.executeSql(
                     `INSERT INTO ${RoomName} (UUID, send_date, sender,sender_name, receiver, peer_key_hash, server_key_hash, encrypt_AES_Key, encrypt_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                     [
                         Crypto.randomUUID(),
-                        SendingMessage.createdAt,
-                        SendingMessage.user._id,
-                        SendingMessage.user.name,
+                        SavingMessage.createdAt,
+                        SavingMessage.user._id,
+                        SavingMessage.user.name,
                         null, //수신자
-                        SendingMessage.public_key_hash,
-                        SendingMessage.server_key_hash, //서버키 해시
-                        SendingMessage.encrypted_AESKey,
-                        SendingMessage.ciphertext,
+                        SavingMessage.public_key_hash,
+                        SavingMessage.server_key_hash, //서버키 해시
+                        SavingMessage.encrypted_AESKey,
+                        SavingMessage.ciphertext,
                     ],
                     (_, result) => {
                         console.log('Insert Success:', result);

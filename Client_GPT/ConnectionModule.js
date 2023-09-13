@@ -43,6 +43,7 @@ var CryptoModule = require('./HybridCryptoModuleForNodeJS');
 var myid = 1000;
 //import React, { useState } from 'react';
 exports.UnHandled_Receiving_Message = [];
+var prev_message = null;
 var Messenger_IO = /** @class */ (function () {
     function Messenger_IO(serverUrl) {
         this.connectSocket(serverUrl);
@@ -78,7 +79,12 @@ var Messenger_IO = /** @class */ (function () {
                 console.log('id 1000을 무시합니다.');
                 return;
             }
+            if (text.ciphertext == prev_message) {
+                console.log('중복수신을 무시합니다.');
+                return;
+            }
             exports.UnHandled_Receiving_Message.push(text);
+            prev_message = text.ciphertext;
             console.log('UnHandled_Receiving_Message', exports.UnHandled_Receiving_Message);
         });
         this.socket.on('receive_request_public_key', function (data) { return __awaiter(_this, void 0, void 0, function () {
