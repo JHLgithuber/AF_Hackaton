@@ -73,7 +73,6 @@ var Messenger_IO = /** @class */ (function () {
             }, 1000); // 1초마다 재연결 시도
         });
         this.socket.on('receive_message', function (text) {
-            console.log('받은 메시지: ', text);
             // 특정 id를 무시하는 로직
             if (text.user._id === String(myid)) {
                 console.log('id 1000을 무시합니다.');
@@ -83,6 +82,7 @@ var Messenger_IO = /** @class */ (function () {
                 console.log('중복수신을 무시합니다.');
                 return;
             }
+            console.log('받은 메시지: ', text);
             exports.UnHandled_Receiving_Message.push(text);
             prev_message = text.ciphertext;
             console.log('UnHandled_Receiving_Message', exports.UnHandled_Receiving_Message);
@@ -92,12 +92,12 @@ var Messenger_IO = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        console.log('받은 request_public_key: ', data);
                         // 특정 id를 무시하는 로직
                         if (data.id === myid) {
                             console.log('id 1000을 무시합니다.');
                             return [2 /*return*/];
                         }
+                        console.log('받은 request_public_key: ', data);
                         return [4 /*yield*/, CryptoModule.Get_PublicKey()];
                     case 1:
                         public_key_object = _a.sent();
@@ -124,12 +124,12 @@ var Messenger_IO = /** @class */ (function () {
                 data: data,
             });
             _this.socket.on('receive_response_public_key', function (receive_data) {
-                console.log('받은 receive_response_public_key: ', receive_data);
                 // 특정 id를 무시하는 로직
                 if (receive_data.id === myid) {
                     console.log('id 1000을 무시합니다.');
                     return;
                 }
+                console.log('받은 request_public_key: ', data);
                 resolve(receive_data.public_key);
             });
         });

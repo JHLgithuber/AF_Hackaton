@@ -50,36 +50,37 @@ var _this = this;
 require('dotenv').config();
 var OpenAI = require('openai');
 var CryptoModule = require('./HybridCryptoModuleForNodeJS');
-//import * as CryptoModule from './HybridCryptoModuleForNodeJS';
+var cluster = require('cluster');
 var _a = require('./ConnectionModule'), Messenger_IO = _a.Messenger_IO, UnHandled_Receiving_Message = _a.UnHandled_Receiving_Message, get_server_public_key = _a.get_server_public_key, get_server_private_key = _a.get_server_private_key;
 var uuidv4 = require('uuid').v4;
-var ChatIO = new Messenger_IO(process.env.MESSENGER_IO_URL);
-var openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
-var UserName = 'GPT_AI';
-var UserID = 1000;
-var AI_arr = [
-    {
-        role: 'system',
-        content: '너는 공군 해커톤 본선에서 사용될 암호화 메신저의 대화 상대를 맡은 AI야. 네가 할 일은 일상적이면서도 자연스러우면서 작위적이지 않으지만, 공식적인 행사에 맞는 예시가 될 대화를 유지하는 것이야.',
-    },
-    { role: 'user', content: '안녕?', },
-];
-var onSend = function (newMessages) {
-    if (newMessages === void 0) { newMessages = []; }
-    return __awaiter(_this, void 0, void 0, function () {
-        var _this = this;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: 
-                //console.log(newMessages);
-                return [4 /*yield*/, newMessages.forEach(function (message) { return __awaiter(_this, void 0, void 0, function () {
-                        var public_key_object, public_server_key_object, encrypted, SendingMessage;
-                        return __generator(this, function (_a) {
-                            switch (_a.label) {
-                                case 0:
-                                    /*if (message.text === '/r') {
+if (cluster.isMaster) {
+    var ChatIO_1 = new Messenger_IO(process.env.MESSENGER_IO_URL);
+    var openai_1 = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+    });
+    var UserName_1 = 'GPT_AI';
+    var UserID_1 = 1000;
+    var AI_arr_1 = [
+        {
+            role: 'system',
+            content: '너는 공군 해커톤 본선에서 사용될 암호화 메신저의 대화 상대를 맡은 AI야. 네가 할 일은 일상적이면서도 자연스러우면서 작위적이지 않으지만, 공식적인 행사에 맞는 예시가 될 대화를 유지하는 것이야.',
+        },
+        { role: 'user', content: '안녕?' },
+    ];
+    var onSend_1 = function (newMessages) {
+        if (newMessages === void 0) { newMessages = []; }
+        return __awaiter(_this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: 
+                    //console.log(newMessages);
+                    return [4 /*yield*/, newMessages.forEach(function (message) { return __awaiter(_this, void 0, void 0, function () {
+                            var public_key_object, public_server_key_object, encrypted, SendingMessage;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        /*if (message.text === '/r') {
                                         // 테이블 삭제
                                         await Chat_DB.transaction((tx) => {
                                             tx.executeSql(
@@ -99,112 +100,139 @@ var onSend = function (newMessages) {
                                         await setMessages([]); // 화면에서 모든 메시지 제거
                                         return; // 이후 처리를 중단
                                     }*/
-                                    //console.log(typeof parseInt(message._id, 10));
-                                    //CryptoModule.Encryption();//메시지 암호화
-                                    // 기존의 메시지 삽입 로직
-                                    console.log('SendingMessage', message);
-                                    return [4 /*yield*/, ChatIO.request_public_key('Give me your KEY by GPT_Client!!!')];
-                                case 1:
-                                    public_key_object = _a.sent();
-                                    return [4 /*yield*/, get_server_public_key()];
-                                case 2:
-                                    public_server_key_object = _a.sent();
-                                    console.log('public_server_key', public_server_key_object.public_key);
-                                    return [4 /*yield*/, CryptoModule.Encryption(public_key_object.public_key, public_server_key_object.public_key, message.text)];
-                                case 3:
-                                    encrypted = _a.sent();
-                                    SendingMessage = {
-                                        ciphertext: encrypted.ciphertext,
-                                        encrypted_AESKey: encrypted.server_encrypted_AESKey,
-                                        public_key_hash: public_key_object.public_key_hash,
-                                        server_key_hash: public_server_key_object.hash,
-                                        createdAt: new Date(),
-                                        user: {
-                                            _id: UserID.toString(),
-                                            name: UserName,
-                                        },
-                                    };
-                                    return [4 /*yield*/, ChatIO.sendMessage(SendingMessage)];
-                                case 4:
-                                    _a.sent();
-                                    AI_arr.push({ role: 'assistant', content: message.text });
-                                    return [2 /*return*/];
-                            }
-                        });
-                    }); })];
-                case 1:
-                    //console.log(newMessages);
-                    _a.sent();
-                    return [2 /*return*/];
-            }
+                                        //console.log(typeof parseInt(message._id, 10));
+                                        //CryptoModule.Encryption();//메시지 암호화
+                                        // 기존의 메시지 삽입 로직
+                                        console.log('SendingMessage', message);
+                                        return [4 /*yield*/, ChatIO_1.request_public_key('Give me your KEY by GPT_Client!!!')];
+                                    case 1:
+                                        public_key_object = _a.sent();
+                                        return [4 /*yield*/, get_server_public_key()];
+                                    case 2:
+                                        public_server_key_object = _a.sent();
+                                        console.log('public_server_key', public_server_key_object.public_key);
+                                        return [4 /*yield*/, CryptoModule.Encryption(public_key_object.public_key, public_server_key_object.public_key, message.text)];
+                                    case 3:
+                                        encrypted = _a.sent();
+                                        SendingMessage = {
+                                            ciphertext: encrypted.ciphertext,
+                                            encrypted_AESKey: encrypted.server_encrypted_AESKey,
+                                            public_key_hash: public_key_object.public_key_hash,
+                                            server_key_hash: public_server_key_object.hash,
+                                            createdAt: new Date(),
+                                            user: {
+                                                _id: UserID_1.toString(),
+                                                name: UserName_1,
+                                            },
+                                        };
+                                        return [4 /*yield*/, ChatIO_1.sendMessage(SendingMessage)];
+                                    case 4:
+                                        _a.sent();
+                                        AI_arr_1.push({ role: 'assistant', content: message.text });
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); })];
+                    case 1:
+                        //console.log(newMessages);
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
         });
-    });
-};
-var onReceive = function (newReceivingMessage) { return __awaiter(_this, void 0, void 0, function () {
-    var Decryptied_Data, updatedMessage, err_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 4, , 5]);
-                return [4 /*yield*/, CryptoModule.Decryption(newReceivingMessage.public_key_hash, newReceivingMessage.server_key_hash, newReceivingMessage.encrypted_AESKey, newReceivingMessage.ciphertext, null)];
-            case 1:
-                Decryptied_Data = _a.sent();
-                updatedMessage = __assign(__assign({}, newReceivingMessage), { _id: uuidv4(), text: Decryptied_Data });
-                return [4 /*yield*/, AI_arr.push({ role: 'user', content: Decryptied_Data })];
-            case 2:
-                _a.sent();
-                return [4 /*yield*/, AI_request()];
-            case 3:
-                _a.sent();
-                return [3 /*break*/, 5];
-            case 4:
-                err_1 = _a.sent();
-                console.error('Decryption failed:', err_1);
-                return [3 /*break*/, 5];
-            case 5:
-                console.log('newReceivingMessage', newReceivingMessage);
-                return [2 /*return*/];
-        }
-    });
-}); };
-function AI_request() {
-    return __awaiter(this, void 0, void 0, function () {
-        var completion, AI_response;
+    };
+    var onReceive_1 = function (newReceivingMessage) { return __awaiter(_this, void 0, void 0, function () {
+        var Decryptied_Data, updatedMessage, err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    if (AI_arr.length >= 20) {
-                        AI_arr.splice(1, AI_arr.length - 20);
-                    }
-                    return [4 /*yield*/, openai.chat.completions.create({
-                            messages: AI_arr,
-                            model: 'gpt-3.5-turbo',
-                        })];
+                    _a.trys.push([0, 4, , 5]);
+                    return [4 /*yield*/, CryptoModule.Decryption(newReceivingMessage.public_key_hash, newReceivingMessage.server_key_hash, newReceivingMessage.encrypted_AESKey, newReceivingMessage.ciphertext, null)];
                 case 1:
-                    completion = _a.sent();
-                    AI_response = completion.choices[0].message;
-                    onSend([{ text: AI_response.content }]);
+                    Decryptied_Data = _a.sent();
+                    updatedMessage = __assign(__assign({}, newReceivingMessage), { _id: uuidv4(), text: Decryptied_Data });
+                    return [4 /*yield*/, AI_arr_1.push({ role: 'user', content: Decryptied_Data })];
+                case 2:
+                    _a.sent();
+                    return [4 /*yield*/, AI_request()];
+                case 3:
+                    _a.sent();
+                    return [3 /*break*/, 5];
+                case 4:
+                    err_1 = _a.sent();
+                    console.error('Decryption failed:', err_1);
+                    return [3 /*break*/, 5];
+                case 5:
+                    console.log('newReceivingMessage', newReceivingMessage);
                     return [2 /*return*/];
             }
         });
-    });
-}
-var intervalId = setInterval(function () {
-    while (UnHandled_Receiving_Message.length) {
-        onReceive(UnHandled_Receiving_Message[0]);
-        UnHandled_Receiving_Message.shift();
+    }); };
+    function AI_request() {
+        return __awaiter(this, void 0, void 0, function () {
+            var completion, AI_response;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (AI_arr_1.length >= 20) {
+                            AI_arr_1.splice(1, AI_arr_1.length - 20);
+                        }
+                        return [4 /*yield*/, openai_1.chat.completions.create({
+                                messages: AI_arr_1,
+                                model: 'gpt-3.5-turbo',
+                            })];
+                    case 1:
+                        completion = _a.sent();
+                        AI_response = completion.choices[0].message;
+                        onSend_1([{ text: AI_response.content }]);
+                        return [2 /*return*/];
+                }
+            });
+        });
     }
-}, 1000); // 1초마다 반복
-var intervalMakeKey = setInterval(function () {
-    CryptoModule.RSA_KeyPair_Maker();
-}, 120000); // 120초마다 반복
-function main() {
+    var intervalId = setInterval(function () {
+        while (UnHandled_Receiving_Message.length) {
+            onReceive_1(UnHandled_Receiving_Message[0]);
+            UnHandled_Receiving_Message.shift();
+        }
+    }, 1000); // 1초마다 반복
+    cluster.fork(); //키 만드는 클러스터 생성
+    cluster.on('exit', function (worker, code, signal) {
+        console.log("\uC6CC\uCEE4 ".concat(worker.process.pid, "\uAC00 \uC885\uB8CC\uB418\uC5C8\uC2B5\uB2C8\uB2E4. \uCF54\uB4DC: ").concat(code, ", \uC2DC\uADF8\uB110: ").concat(signal));
+        console.log('새 워커를 시작합니다.');
+        cluster.fork();
+    });
+    function main() {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                CryptoModule.Remove_RSA_KeyTable();
+                AI_request();
+                return [2 /*return*/];
+            });
+        });
+    }
+    main().catch(console.error); // 에러가 발생할 경우 출력
+}
+else {
+    make_key_cluster();
+}
+function make_key_cluster() {
     return __awaiter(this, void 0, void 0, function () {
+        var intervalMakeKey;
+        var _this = this;
         return __generator(this, function (_a) {
-            CryptoModule.Remove_RSA_KeyTable();
-            AI_request();
+            console.log('Cluster ON');
+            intervalMakeKey = setInterval(function () { return __awaiter(_this, void 0, void 0, function () {
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, CryptoModule.RSA_KeyPair_Maker()];
+                        case 1:
+                            _a.sent();
+                            return [2 /*return*/];
+                    }
+                });
+            }); }, 10000);
             return [2 /*return*/];
         });
     });
 }
-main().catch(console.error); // 에러가 발생할 경우 출력

@@ -2,7 +2,7 @@
 require('dotenv').config();
 const OpenAI = require('openai');
 const CryptoModule = require('./HybridCryptoModuleForNodeJS');
-//import * as CryptoModule from './HybridCryptoModuleForNodeJS';
+const cluster = require('cluster');
 const {
     Messenger_IO,
     UnHandled_Receiving_Message,
@@ -10,28 +10,30 @@ const {
     get_server_private_key,
 } = require('./ConnectionModule');
 const { v4: uuidv4 } = require('uuid');
-const ChatIO = new Messenger_IO(process.env.MESSENGER_IO_URL);
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+if (cluster.isMaster) {
+    const ChatIO = new Messenger_IO(process.env.MESSENGER_IO_URL);
 
-const UserName = 'GPT_AI';
-const UserID = 1000;
+    const openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+    });
 
-let AI_arr = [
-    {
-        role: 'system',
-        content:
-            '너는 공군 해커톤 본선에서 사용될 암호화 메신저의 대화 상대를 맡은 AI야. 네가 할 일은 일상적이면서도 자연스러우면서 작위적이지 않으지만, 공식적인 행사에 맞는 예시가 될 대화를 유지하는 것이야.',
-    },
-    {role: 'user',content: '안녕?',},
-];
+    const UserName = 'GPT_AI';
+    const UserID = 1000;
 
-const onSend = async (newMessages = []) => {
-    //console.log(newMessages);
-    await newMessages.forEach(async (message) => {
-        /*if (message.text === '/r') {
+    let AI_arr = [
+        {
+            role: 'system',
+            content:
+                '너는 공군 해커톤 본선에서 사용될 암호화 메신저의 대화 상대를 맡은 AI야. 네가 할 일은 일상적이면서도 자연스러우면서 작위적이지 않으지만, 공식적인 행사에 맞는 예시가 될 대화를 유지하는 것이야.',
+        },
+        { role: 'user', content: '안녕?' },
+    ];
+
+    const onSend = async (newMessages = []) => {
+        //console.log(newMessages);
+        await newMessages.forEach(async (message) => {
+            /*if (message.text === '/r') {
             // 테이블 삭제
             await Chat_DB.transaction((tx) => {
                 tx.executeSql(
@@ -51,36 +53,36 @@ const onSend = async (newMessages = []) => {
             await setMessages([]); // 화면에서 모든 메시지 제거
             return; // 이후 처리를 중단
         }*/
-        //console.log(typeof parseInt(message._id, 10));
-        //CryptoModule.Encryption();//메시지 암호화
-        // 기존의 메시지 삽입 로직
-        console.log('SendingMessage', message);
-        let public_key_object = await ChatIO.request_public_key(
-            'Give me your KEY by GPT_Client!!!'
-        );
-        let public_server_key_object = await get_server_public_key();
-        console.log('public_server_key', public_server_key_object.public_key);
-        let encrypted = await CryptoModule.Encryption(
-            public_key_object.public_key,
-            public_server_key_object.public_key,
-            message.text
-        );
+            //console.log(typeof parseInt(message._id, 10));
+            //CryptoModule.Encryption();//메시지 암호화
+            // 기존의 메시지 삽입 로직
+            console.log('SendingMessage', message);
+            let public_key_object = await ChatIO.request_public_key(
+                'Give me your KEY by GPT_Client!!!'
+            );
+            let public_server_key_object = await get_server_public_key();
+            console.log('public_server_key', public_server_key_object.public_key);
+            let encrypted = await CryptoModule.Encryption(
+                public_key_object.public_key,
+                public_server_key_object.public_key,
+                message.text
+            );
 
-        const SendingMessage = {
-            ciphertext: encrypted.ciphertext,
-            encrypted_AESKey: encrypted.server_encrypted_AESKey,
-            public_key_hash: public_key_object.public_key_hash,
-            server_key_hash: public_server_key_object.hash,
-            createdAt: new Date(),
-            user: {
-                _id: UserID.toString(),
-                name: UserName,
-            },
-        };
-        await ChatIO.sendMessage(SendingMessage);
-        AI_arr.push({ role: 'assistant', content: message.text });
+            const SendingMessage = {
+                ciphertext: encrypted.ciphertext,
+                encrypted_AESKey: encrypted.server_encrypted_AESKey,
+                public_key_hash: public_key_object.public_key_hash,
+                server_key_hash: public_server_key_object.hash,
+                createdAt: new Date(),
+                user: {
+                    _id: UserID.toString(),
+                    name: UserName,
+                },
+            };
+            await ChatIO.sendMessage(SendingMessage);
+            AI_arr.push({ role: 'assistant', content: message.text });
 
-        /*await Chat_DB.transaction((tx) => {
+            /*await Chat_DB.transaction((tx) => {
             tx.executeSql(
                 `INSERT INTO ${RoomName} (UUID, send_date, sender,sender_name, receiver, peer_key_hash, server_key_hash, encrypt_AES_Key, encrypt_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
@@ -104,14 +106,14 @@ const onSend = async (newMessages = []) => {
             );
         });*/
 
-        //await setMessages((prevMessages) => GiftedChat.append(prevMessages, newMessages));
-    });
-};
+            //await setMessages((prevMessages) => GiftedChat.append(prevMessages, newMessages));
+        });
+    };
 
-const onReceive = async (newReceivingMessage) => {
-    // 메시지 수신 로직
-    // 데이터베이스에 새로운 수신 메시지를 저장
-    /*Chat_DB.transaction((tx) => {
+    const onReceive = async (newReceivingMessage) => {
+        // 메시지 수신 로직
+        // 데이터베이스에 새로운 수신 메시지를 저장
+        /*Chat_DB.transaction((tx) => {
         tx.executeSql(
             `INSERT INTO ${RoomName} (UUID, send_date, sender, sender_name, receiver, peer_key_hash, server_key_hash, encrypt_AES_Key, encrypt_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
@@ -135,60 +137,74 @@ const onReceive = async (newReceivingMessage) => {
         );
     });*/
 
-    try {
-        const Decryptied_Data = await CryptoModule.Decryption(
-            newReceivingMessage.public_key_hash,
-            newReceivingMessage.server_key_hash,
-            newReceivingMessage.encrypted_AESKey,
-            newReceivingMessage.ciphertext,
-            null
+        try {
+            const Decryptied_Data = await CryptoModule.Decryption(
+                newReceivingMessage.public_key_hash,
+                newReceivingMessage.server_key_hash,
+                newReceivingMessage.encrypted_AESKey,
+                newReceivingMessage.ciphertext,
+                null
+            );
+
+            let updatedMessage = {
+                ...newReceivingMessage,
+                _id: uuidv4(),
+                text: Decryptied_Data,
+            };
+
+            await AI_arr.push({ role: 'user', content: Decryptied_Data });
+            await AI_request();
+        } catch (err) {
+            console.error('Decryption failed:', err);
+        }
+
+        console.log('newReceivingMessage', newReceivingMessage);
+    };
+
+    async function AI_request() {
+        if (AI_arr.length >= 20) {
+            AI_arr.splice(1, AI_arr.length - 20);
+        }
+
+        const completion = await openai.chat.completions.create({
+            messages: AI_arr,
+            model: 'gpt-3.5-turbo',
+        });
+        const AI_response = completion.choices[0].message;
+        onSend([{ text: AI_response.content }]);
+    }
+
+    const intervalId = setInterval(() => {
+        while (UnHandled_Receiving_Message.length) {
+            onReceive(UnHandled_Receiving_Message[0]);
+            UnHandled_Receiving_Message.shift();
+        }
+    }, 1000); // 1초마다 반복
+
+    cluster.fork(); //키 만드는 클러스터 생성
+    cluster.on('exit', (worker, code, signal) => {
+        console.log(
+            `워커 ${worker.process.pid}가 종료되었습니다. 코드: ${code}, 시그널: ${signal}`
         );
-
-        let updatedMessage = {
-            ...newReceivingMessage,
-            _id: uuidv4(),
-            text: Decryptied_Data,
-        };
-
-        await AI_arr.push({ role: 'user', content: Decryptied_Data });
-        await AI_request();
-    } catch (err) {
-        console.error('Decryption failed:', err);
-    }
-
-    console.log('newReceivingMessage', newReceivingMessage);
-};
-
-async function AI_request() {
-    if (AI_arr.length >= 20) {
-        AI_arr.splice(1, AI_arr.length - 20);
-    }
-
-    const completion = await openai.chat.completions.create({
-        messages: AI_arr,
-        model: 'gpt-3.5-turbo',
+        console.log('새 워커를 시작합니다.');
+        cluster.fork();
     });
-    const AI_response = completion.choices[0].message;
-    onSend([{ text: AI_response.content }]);
-}
 
-const intervalId = setInterval(() => {
-    while (UnHandled_Receiving_Message.length) {
-        onReceive(UnHandled_Receiving_Message[0]);
-        UnHandled_Receiving_Message.shift();
+    async function main() {
+        CryptoModule.Remove_RSA_KeyTable();
+        AI_request();
+        //await AI_request();
+        //console.log(AI_messages);
     }
-}, 1000); // 1초마다 반복
 
-
-const intervalMakeKey = setInterval(() => {
-    CryptoModule.RSA_KeyPair_Maker();
-}, 120000); // 120초마다 반복
-
-async function main() {
-	CryptoModule.Remove_RSA_KeyTable();
-    AI_request();
-    //await AI_request();
-    //console.log(AI_messages);
+    main().catch(console.error); // 에러가 발생할 경우 출력
+} else {
+    make_key_cluster();
 }
 
-main().catch(console.error); // 에러가 발생할 경우 출력
+async function make_key_cluster() {
+    console.log('Cluster ON');
+    const intervalMakeKey = setInterval(async () => {
+        await CryptoModule.RSA_KeyPair_Maker();
+    }, 10000); // 10초마다 반복
+}
