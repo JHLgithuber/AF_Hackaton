@@ -5,10 +5,9 @@
 import React, { useState, useEffect } from 'react';
 import * as SQLite from 'expo-sqlite';
 import * as Crypto from 'expo-crypto';
-import * as TaskManager from 'expo-task-manager';
-import * as BackgroundFetch from 'expo-background-fetch';
+//import * as TaskManager from 'expo-task-manager';
+//import * as BackgroundFetch from 'expo-background-fetch';
 import { InteractionManager } from 'react-native';
-import { self } from 'react-native-workers';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import base64 from 'base-64';

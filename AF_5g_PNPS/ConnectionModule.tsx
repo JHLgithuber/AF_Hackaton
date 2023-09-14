@@ -102,7 +102,7 @@ export class Messenger_IO {
 
 export async function get_server_public_key() {
 	try {
-		const response = await fetch(process.env.KEY_SERVER + '/generate_key');
+		const response = await fetch('https://keyserver.run.goorm.site' + '/generate_key');
 		const data = await response.json();
 		console.log(`Server Public Key: ${data.public_key}`);
 		const server_public_key = JSON.stringify(data.public_key)
@@ -124,7 +124,7 @@ export async function get_server_public_key() {
 
 export async function get_server_private_key(hash_value) {
 	try {
-		const response = await fetch(process.env.KEY_SERVER + '/get_key/' + hash_value);
+		const response = await fetch('https://keyserver.run.goorm.site' + '/get_key/' + hash_value);
 		const data = await response.json();
 		const private_key = JSON.stringify(data.private_key)
 			.replace(/\\/g, '')

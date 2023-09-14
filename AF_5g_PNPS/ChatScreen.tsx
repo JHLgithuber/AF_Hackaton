@@ -6,19 +6,18 @@ import * as SQLite from 'expo-sqlite';
 import * as CryptoModule from './HybridCryptoModule';
 import * as Crypto from 'expo-crypto';
 import { Messenger_IO, UnHandled_Receiving_Message, get_server_public_key, get_server_private_key } from './ConnectionModule';
-import useHandleUnreadMessages from './useHandleUnreadMessages';
+//import useHandleUnreadMessages from './useHandleUnreadMessages';
 
 
 // 채팅 저장을 위한 SQLite 데이터베이스를 열기
 const Chat_DB = SQLite.openDatabase('Encrypted_Chat_Data.db');
 let ChatIO = new Messenger_IO();
-//console.log("process.env.MESSENGER_IO_URL",process.env.MESSENGER_IO_URL);
 export var existed_UnHandled_Receiving_Message = 0;
 
 export default function ChatScreen() {
     const RoomName = 'test_room';
-    const UserID = process.env.USER_ID;
-    const UserName = process.env.USER_NAME;
+    const UserID = 100;
+    const UserName = '이진형';
 
     const [messages, setMessages] = useState([]);
     const [isLoading, setIsLoading] = useState(false); // ActivityIndicator 상태 관리를 위한 상태 변수
