@@ -5,8 +5,6 @@ import { Appearance } from 'react-native';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Provider as PaperProvider } from 'react-native-paper';
-import * as TaskManager from 'expo-task-manager';
-import * as BackgroundFetch from 'expo-background-fetch';
 import ChatScreen from './ChatScreen';
 import HomeScreen from './HomeScreen';
 import ProfileScreen from './ProfileScreen';
